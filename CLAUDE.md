@@ -1,0 +1,204 @@
+# x.uma — Cross-Platform Unified Matcher API
+
+## What is x.uma?
+
+A matcher ecosystem implementing the xDS Unified Matcher API across multiple languages and domains.
+
+| Package | Language | Notes |
+|---------|----------|-------|
+| **r.umi** | Rust | Core engine (+ Rumi the poet) |
+| **p.uma** | Python | PyO3/maturin bindings |
+
+WASM is a build target of r.umi (`wasm-pack`), not a separate package.
+
+## Design Philosophy: ACES
+
+**A**daptable · **C**omposable · **E**xtensible · **S**oftware
+
+x.uma follows ACES principles using hexagonal architecture (ports & adapters) to achieve **sustainable excellence** — no rewrites needed.
+
+### Architecture
+
+```
+                    ┌─────────────────────────────────┐
+                    │         Domain Adapters         │
+                    │ xuma.http xuma.claude xuma.grpc │
+                    └───────────────┬─────────────────┘
+                                    │
+                    ┌───────────────▼─────────────────┐
+                    │            PORTS                │
+                    │   InputPort       ActionPort    │
+                    │  (extract data)  (emit result)  │
+                    └───────────────┬─────────────────┘
+                                    │
+                    ┌───────────────▼─────────────────┐
+                    │            CORE                 │
+                    │         r.umi engine            │
+                    │   Matcher · Predicate · Tree    │
+                    │      (pure, domain-agnostic)    │
+                    └─────────────────────────────────┘
+```
+
+### ACES Properties
+
+| Property | Implementation |
+|----------|----------------|
+| **Adaptable** | New domains plug in without touching core |
+| **Composable** | Matchers nest, predicates AND/OR/NOT, trees recurse |
+| **Extensible** | `TypedExtensionConfig` is the extension seam |
+| **Sustainable** | Core is stable; growth happens at edges |
+
+### The Seam
+
+`TypedExtensionConfig` from xDS is the architectural seam:
+
+```protobuf
+message TypedExtensionConfig {
+  string name = 1;                       // adapter identifier
+  google.protobuf.Any typed_config = 2;  // adapter config
+}
+```
+
+Every `input` and `action` is a port. Adapters are concrete registered types.
+
+### Extension Namespace: `xuma`
+
+All x.uma extensions use the `xuma` proto package namespace:
+
+```
+xuma.core.v1      # Base types, registry
+xuma.test.v1      # Conformance testing
+xuma.http.v1      # HTTP matching
+xuma.claude.v1    # Claude Code hooks
+xuma.grpc.v1      # gRPC matching
+```
+
+Type URLs:
+- `type.googleapis.com/xuma.test.v1.StringInput`
+- `type.googleapis.com/xuma.http.v1.HeaderInput`
+- `type.googleapis.com/xuma.claude.v1.HookContext`
+
+## Project Structure
+
+```
+x.uma/
+├── proto/
+│   ├── xds/                    # upstream (submodule/buf dep)
+│   └── xuma/                   # x.uma extensions (namespace: xuma.*)
+│       ├── core/v1/            # base types, registry
+│       ├── test/v1/            # conformance testing inputs
+│       ├── http/v1/            # HTTP domain
+│       ├── claude/v1/          # Claude Code hooks domain
+│       └── .../                # more domains
+├── spec/
+│   └── tests/                  # conformance test fixtures (YAML)
+├── r.umi/                      # Rust core (+ wasm-pack for WASM target)
+├── p.uma/                      # Python bindings (PyO3/maturin)
+└── justfile                    # polyglot task orchestration
+```
+
+## Tooling
+
+| Concern | Tool |
+|---------|------|
+| Proto codegen | buf.build |
+| Rust | Cargo workspace |
+| Python | uv + maturin |
+| WASM (optional) | wasm-pack (build target of r.umi) |
+| Task orchestration | just |
+| Conformance tests | YAML fixtures, native runners |
+
+## Reference Implementations
+
+| Implementation | Language | Role |
+|----------------|----------|------|
+| Envoy | C++ | Original, production-proven |
+| r.umi | Rust | Our reference |
+
+Envoy source: `~/oss/envoy/source/common/matcher/`
+
+## r.umi Type System (Envoy-Inspired)
+
+**Key insight from spike**: Type erasure at the **data level**, not the predicate level.
+
+```rust
+// MatchingData — the erased data type (Envoy's MatchingDataType)
+pub enum MatchingData { None, String(String), Int(i64), Bool(bool), Bytes(Vec<u8>) }
+
+// DataInput — domain-specific, generic over context, returns erased type
+pub trait DataInput<Ctx>: Send + Sync + Debug {
+    fn get(&self, ctx: &Ctx) -> MatchingData;
+}
+
+// InputMatcher — domain-agnostic, NON-GENERIC, shareable across contexts!
+pub trait InputMatcher: Send + Sync + Debug {
+    fn matches(&self, value: &MatchingData) -> bool;
+}
+
+// SinglePredicate — where domain-specific meets domain-agnostic
+pub struct SinglePredicate<Ctx> {
+    input: Box<dyn DataInput<Ctx>>,
+    matcher: Box<dyn InputMatcher>,
+}
+```
+
+**Why this works:**
+- `InputMatcher` is non-generic → same `ExactMatcher` works for HTTP, Claude, test contexts
+- No GATs or complex lifetimes needed
+- Battle-tested at Google scale (Envoy uses this approach)
+
+## xDS Proto Semantics (Critical)
+
+From official Envoy xDS proto research:
+
+| Concept | xDS Semantics | r.umi Implementation |
+|---------|---------------|---------------------|
+| **OnMatch exclusivity** | `oneof { Matcher matcher = 1; Action action = 2; }` | `enum OnMatch<Ctx, A> { Action(A), Matcher(Box<Matcher>) }` |
+| **Nested matcher failure** | If nested matcher returns no-match, parent OnMatch fails | Continue to next field_matcher (no fallback) |
+| **on_no_match** | At Matcher level only, not per-OnMatch | `Matcher.on_no_match: Option<OnMatch>` |
+| **First-match-wins** | `keep_matching: true` records action but returns no-match | INV enforced in Matcher::evaluate() |
+
+**Key insight**: OnMatch is EXCLUSIVE — action XOR nested matcher, never both. Making illegal states unrepresentable at the type level.
+
+## Arch-Guild Constraints (Mandatory)
+
+From 13-agent architecture review:
+
+| Constraint | Source | Rationale |
+|------------|--------|-----------|
+| **ReDoS Protection** | Vector, Taleb | Use Rust `regex` crate only (linear time). No `fancy-regex`. |
+| **Depth Limits** | Vector, Taleb | Max 32 levels for nested matchers. Validate at config load. |
+| **Type Registry Immutability** | Vector, Lamport | Lock after initialization. No runtime registration. |
+| **Send + Sync** | Lamport, Lotfi | All core types must be thread-safe (FFI requirement). |
+| **Iterative Evaluation** | Taleb, Dijkstra | No recursive `evaluate()` — use explicit stack (deferred to v0.2). |
+| **DataInput None → false** | Dijkstra | `None` from `DataInput::get()` → predicate evaluates to `false`. |
+| **No unsafe impl** | Wolf | Let compiler derive Send/Sync — don't add restrictive bounds. |
+
+## r.umi Crate Structure
+
+```
+r.umi/
+├── rumi-core/      # Pure engine, no_std + alloc compatible
+├── rumi-proto/     # Proto types + ExtensionRegistry
+├── rumi-domains/   # Feature-gated adapters (test, http, claude)
+└── rumi/           # Facade crate
+```
+
+Dependencies point inward: `rumi → rumi-domains → rumi-core`, `rumi → rumi-proto → rumi-core`.
+
+## Working Conventions
+
+### Scratch Directory
+
+`scratch/` is for session notes, research synthesis, and working documents.
+
+### Conformance Tests
+
+All implementations must pass all fixtures in `spec/tests/`. The fixture suite is the source of truth for correctness.
+
+### Development Workflow
+
+1. **Write fixture first** (conformance-driven development)
+2. **Implement to pass fixture**
+3. **Benchmark** (catch regressions early)
+4. Use `just build`, `just test`, `just lint` for common tasks
