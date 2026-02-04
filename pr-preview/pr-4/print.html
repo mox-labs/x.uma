@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "searchindex-71346433.js";
+            window.path_to_searchindex_js = "searchindex-c7954d56.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-fa7c0e76.js"></script>
@@ -198,12 +198,15 @@
 <p><strong>Type-safe composition.</strong> Predicates compose with AND/OR/NOT. Matchers nest. Actions are exclusive.</p>
 <p><strong>xDS compatible.</strong> Built on the same protocol Envoy uses at scale.</p>
 <h2 id="quick-example"><a class="header" href="#quick-example">Quick Example</a></h2>
-<pre class="playground"><code class="language-rust editable">use rumi::prelude::*;
+<pre><code class="language-rust ignore">use rumi::prelude::*;
 
 // Define what data we're matching on
+#[derive(Debug)]
 struct Request { path: String }
 
+#[derive(Debug)]
 struct PathInput;
+
 impl DataInput&lt;Request&gt; for PathInput {
     fn get(&amp;self, ctx: &amp;Request) -&gt; MatchingData {
         MatchingData::String(ctx.path.clone())
@@ -211,13 +214,18 @@ impl DataInput&lt;Request&gt; for PathInput {
 }
 
 // Build a matcher
-let matcher = Matcher::builder()
-    .add_rule(
-        Predicate::single(PathInput, PrefixMatcher::new("/api/")),
-        OnMatch::Action("api_handler"),
-    )
-    .on_no_match(OnMatch::Action("default_handler"))
-    .build();
+let matcher: Matcher&lt;Request, &amp;str&gt; = Matcher::new(
+    vec![
+        FieldMatcher::new(
+            Predicate::Single(SinglePredicate::new(
+                Box::new(PathInput),
+                Box::new(PrefixMatcher::new("/api/")),
+            )),
+            OnMatch::Action("api_handler"),
+        ),
+    ],
+    Some(OnMatch::Action("default_handler")),
+);
 
 // Evaluate
 let req = Request { path: "/api/users".into() };
@@ -247,14 +255,18 @@ let result = matcher.evaluate(&amp;req);
 rumi = "0.1"
 </code></pre>
 <h2 id="basic-usage"><a class="header" href="#basic-usage">Basic Usage</a></h2>
-<pre class="playground"><code class="language-rust editable">use rumi::prelude::*;
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use rumi::prelude::*;
 
 // 1. Define your context type
+#[derive(Debug)]
 struct MyContext {
     value: String,
 }
 
 // 2. Implement DataInput to extract data
+#[derive(Debug)]
 struct ValueInput;
 
 impl DataInput&lt;MyContext&gt; for ValueInput {
@@ -264,16 +276,23 @@ impl DataInput&lt;MyContext&gt; for ValueInput {
 }
 
 // 3. Build a matcher
-let matcher = Matcher::builder()
-    .add_rule(
-        Predicate::single(ValueInput, ExactMatcher::new("hello")),
-        OnMatch::Action("matched!"),
-    )
-    .build();
+let matcher: Matcher&lt;MyContext, &amp;str&gt; = Matcher::new(
+    vec![
+        FieldMatcher::new(
+            Predicate::Single(SinglePredicate::new(
+                Box::new(ValueInput),
+                Box::new(ExactMatcher::new("hello")),
+            )),
+            OnMatch::Action("matched!"),
+        ),
+    ],
+    None,
+);
 
 // 4. Evaluate
 let ctx = MyContext { value: "hello".into() };
-assert_eq!(matcher.evaluate(&amp;ctx), Some(&amp;"matched!"));</code></pre>
+assert_eq!(matcher.evaluate(&amp;ctx), Some("matched!"));
+<span class="boring">}</span></code></pre>
 <h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
 <ul>
 <li><a href="#concepts">Concepts</a> — understand the core abstractions</li>
@@ -302,6 +321,7 @@ assert_eq!(matcher.evaluate(&amp;ctx), Some(&amp;"matched!"));</code></pre>
     Int(i64),
     Bool(bool),
     Bytes(Vec&lt;u8&gt;),
+    Custom(Arc&lt;dyn CustomMatchData&gt;),  // Extensible for domain-specific types
 }
 <span class="boring">}</span></code></pre>
 <h3 id="datainput"><a class="header" href="#datainput">DataInput</a></h3>
@@ -371,16 +391,17 @@ message PathInput {}
 <pre><code class="language-bash">just gen
 </code></pre>
 <h2 id="step-3-implement-datainput"><a class="header" href="#step-3-implement-datainput">Step 3: Implement DataInput</a></h2>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>// rumi/ext/http/src/lib.rs
+<pre><code class="language-rust ignore">// rumi/ext/http/src/lib.rs
 use rumi::{DataInput, MatchingData};
+use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct HttpRequest {
     pub headers: HashMap&lt;String, String&gt;,
     pub path: String,
 }
 
+#[derive(Debug)]
 pub struct HeaderInput {
     pub header_name: String,
 }
@@ -392,8 +413,7 @@ impl DataInput&lt;HttpRequest&gt; for HeaderInput {
             .map(|v| MatchingData::String(v.clone()))
             .unwrap_or(MatchingData::None)
     }
-}
-<span class="boring">}</span></code></pre>
+}</code></pre>
 <h2 id="step-4-add-conformance-tests"><a class="header" href="#step-4-add-conformance-tests">Step 4: Add Conformance Tests</a></h2>
 <pre><code class="language-yaml"># spec/tests/http/header_exact.yaml
 name: "HTTP header exact match"
@@ -499,16 +519,23 @@ Core unchanged.
 </code></pre>
 <h3 id="composable"><a class="header" href="#composable">Composable</a></h3>
 <p>Matchers nest. Predicates AND/OR/NOT. Trees recurse.</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>Predicate::And(vec![
-    Predicate::single(PathInput, PrefixMatcher::new("/api/")),
+<pre><code class="language-rust ignore">// Predicates compose naturally with AND/OR/NOT
+Predicate::And(vec![
+    Predicate::Single(SinglePredicate::new(
+        Box::new(PathInput),
+        Box::new(PrefixMatcher::new("/api/")),
+    )),
     Predicate::Or(vec![
-        Predicate::single(MethodInput, ExactMatcher::new("GET")),
-        Predicate::single(MethodInput, ExactMatcher::new("POST")),
+        Predicate::Single(SinglePredicate::new(
+            Box::new(MethodInput),
+            Box::new(ExactMatcher::new("GET")),
+        )),
+        Predicate::Single(SinglePredicate::new(
+            Box::new(MethodInput),
+            Box::new(ExactMatcher::new("POST")),
+        )),
     ]),
-])
-<span class="boring">}</span></code></pre>
+])</code></pre>
 <h3 id="extensible"><a class="header" href="#extensible">Extensible</a></h3>
 <p><code>TypedExtensionConfig</code> is the extension seam. Register new types at startup, use them in configs.</p>
 <pre><code class="language-yaml">input:

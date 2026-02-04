@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "rust";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-71346433.js";
+            window.path_to_searchindex_js = "../searchindex-c7954d56.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-fa7c0e76.js"></script>
@@ -188,14 +188,18 @@
 rumi = "0.1"
 </code></pre>
 <h2 id="basic-usage"><a class="header" href="#basic-usage">Basic Usage</a></h2>
-<pre class="playground"><code class="language-rust editable">use rumi::prelude::*;
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use rumi::prelude::*;
 
 // 1. Define your context type
+#[derive(Debug)]
 struct MyContext {
     value: String,
 }
 
 // 2. Implement DataInput to extract data
+#[derive(Debug)]
 struct ValueInput;
 
 impl DataInput&lt;MyContext&gt; for ValueInput {
@@ -205,16 +209,23 @@ impl DataInput&lt;MyContext&gt; for ValueInput {
 }
 
 // 3. Build a matcher
-let matcher = Matcher::builder()
-    .add_rule(
-        Predicate::single(ValueInput, ExactMatcher::new("hello")),
-        OnMatch::Action("matched!"),
-    )
-    .build();
+let matcher: Matcher&lt;MyContext, &amp;str&gt; = Matcher::new(
+    vec![
+        FieldMatcher::new(
+            Predicate::Single(SinglePredicate::new(
+                Box::new(ValueInput),
+                Box::new(ExactMatcher::new("hello")),
+            )),
+            OnMatch::Action("matched!"),
+        ),
+    ],
+    None,
+);
 
 // 4. Evaluate
 let ctx = MyContext { value: "hello".into() };
-assert_eq!(matcher.evaluate(&amp;ctx), Some(&amp;"matched!"));</code></pre>
+assert_eq!(matcher.evaluate(&amp;ctx), Some("matched!"));
+<span class="boring">}</span></code></pre>
 <h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
 <ul>
 <li><a href="concepts.html">Concepts</a> — understand the core abstractions</li>

@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "rust";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-71346433.js";
+            window.path_to_searchindex_js = "../searchindex-c7954d56.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-fa7c0e76.js"></script>
@@ -202,16 +202,17 @@ message PathInput {}
 <pre><code class="language-bash">just gen
 </code></pre>
 <h2 id="step-3-implement-datainput"><a class="header" href="#step-3-implement-datainput">Step 3: Implement DataInput</a></h2>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>// rumi/ext/http/src/lib.rs
+<pre><code class="language-rust ignore">// rumi/ext/http/src/lib.rs
 use rumi::{DataInput, MatchingData};
+use std::collections::HashMap;
 
+#[derive(Debug)]
 pub struct HttpRequest {
     pub headers: HashMap&lt;String, String&gt;,
     pub path: String,
 }
 
+#[derive(Debug)]
 pub struct HeaderInput {
     pub header_name: String,
 }
@@ -223,8 +224,7 @@ impl DataInput&lt;HttpRequest&gt; for HeaderInput {
             .map(|v| MatchingData::String(v.clone()))
             .unwrap_or(MatchingData::None)
     }
-}
-<span class="boring">}</span></code></pre>
+}</code></pre>
 <h2 id="step-4-add-conformance-tests"><a class="header" href="#step-4-add-conformance-tests">Step 4: Add Conformance Tests</a></h2>
 <pre><code class="language-yaml"># spec/tests/http/header_exact.yaml
 name: "HTTP header exact match"

@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "rust";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-71346433.js";
+            window.path_to_searchindex_js = "../searchindex-c7954d56.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-fa7c0e76.js"></script>
@@ -202,6 +202,7 @@
     Int(i64),
     Bool(bool),
     Bytes(Vec&lt;u8&gt;),
+    Custom(Arc&lt;dyn CustomMatchData&gt;),  // Extensible for domain-specific types
 }
 <span class="boring">}</span></code></pre>
 <h3 id="datainput"><a class="header" href="#datainput">DataInput</a></h3>
