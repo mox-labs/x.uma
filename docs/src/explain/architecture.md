@@ -67,10 +67,11 @@ pub trait InputMatcher {
 
 ```text
 rumi/
-├── rumi-core/      # Pure engine, no_std + alloc
-├── rumi-proto/     # Proto types + registry
-├── rumi-domains/   # Feature-gated adapters
-└── rumi/           # Facade crate
+├── core/           # Core engine (package: rumi)
+└── ext/            # Domain extensions
+    ├── test/       # rumi-test (conformance)
+    ├── http/       # rumi-http
+    └── claude/     # rumi-claude
 ```
 
 Dependencies point inward. Core knows nothing about domains.

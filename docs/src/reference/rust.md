@@ -10,17 +10,17 @@
 
 | Crate | Description |
 |-------|-------------|
-| [`rumi`](../generated/rust/rumi/index.html) | Facade crate (re-exports everything) |
-| [`rumi-core`](../generated/rust/rumi_core/index.html) | Core engine, `no_std` compatible |
-| [`rumi-proto`](../generated/rust/rumi_proto/index.html) | Proto bindings + registry |
-| [`rumi-domains`](../generated/rust/rumi_domains/index.html) | Domain adapters |
+| [`rumi`](../generated/rust/rumi/index.html) | Core engine |
+| [`rumi-test`](../generated/rust/rumi_test/index.html) | Conformance testing |
+| [`rumi-http`](../generated/rust/rumi_http/index.html) | HTTP matching |
+| [`rumi-claude`](../generated/rust/rumi_claude/index.html) | Claude Code hooks |
 
 ## Quick Links
 
-- [`DataInput`](../generated/rust/rumi_core/trait.DataInput.html) — Extract data from context
-- [`InputMatcher`](../generated/rust/rumi_core/trait.InputMatcher.html) — Match against data
-- [`Predicate`](../generated/rust/rumi_core/enum.Predicate.html) — Boolean composition
-- [`Matcher`](../generated/rust/rumi_core/struct.Matcher.html) — Top-level container
+- [`DataInput`](../generated/rust/rumi/trait.DataInput.html) — Extract data from context
+- [`InputMatcher`](../generated/rust/rumi/trait.InputMatcher.html) — Match against data
+- [`Predicate`](../generated/rust/rumi/enum.Predicate.html) — Boolean composition
+- [`Matcher`](../generated/rust/rumi/struct.Matcher.html) — Top-level container
 
 ## Source
 

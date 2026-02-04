@@ -105,8 +105,9 @@ x.uma/
 | Phase | Focus | Status |
 |-------|-------|--------|
 | 0 | Scaffolding | ✅ Done |
-| 1 | Core Traits (rumi-core) | ✅ Done |
-| 2 | Conformance Fixtures | ⏳ Next |
+| 1 | Core Traits | ✅ Done |
+| 2 | Conformance Fixtures | ✅ Done |
+| 2.5 | Extensible MatchingData | ⏳ Next |
 | 3 | StringMatcher, MatcherTree | Planned |
 | 4 | p.uma (Pure Python) | Planned |
 | 5 | j.uma (Pure TypeScript) | Planned |

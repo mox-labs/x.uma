@@ -17,7 +17,7 @@ Check for breaking changes against the main branch.
 2. **Rust API changes:**
    - Use `cargo semver-checks` if available
    - Otherwise, review public API surface manually:
-     - Check `pub` items in rumi-core/src/lib.rs
+     - Check `pub` items in rumi/core/src/lib.rs
      - Check trait definitions
      - Check struct fields
 

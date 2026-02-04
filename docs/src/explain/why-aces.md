@@ -17,8 +17,8 @@ Matchers are everywhere: routing, filtering, access control, feature flags. But 
 New domains plug in without touching core.
 
 ```text
-Adding HTTP support? → Create rumi-domains/http.rs
-Adding Claude hooks? → Create rumi-domains/claude.rs
+Adding HTTP support? → Create rumi/ext/http/
+Adding Claude hooks? → Create rumi/ext/claude/
 Core unchanged.
 ```
 

@@ -3,12 +3,9 @@
 //! The `Matcher` is the entry point for evaluation. It contains a list of
 //! field matchers and evaluates them in order, returning the first match.
 
-#[cfg(all(not(feature = "std"), feature = "alloc"))]
-use alloc::vec::Vec;
-
 use crate::{FieldMatcher, OnMatch};
-use core::fmt::Debug;
-use core::marker::PhantomData;
+use std::fmt::Debug;
+use std::marker::PhantomData;
 
 /// Top-level matcher with first-match-wins semantics.
 ///
@@ -172,7 +169,7 @@ impl<Ctx, A: Clone + Send + Sync + 'static> Matcher<Ctx, A> {
 }
 
 impl<Ctx, A: Clone + Send + Sync + Debug + 'static> Debug for Matcher<Ctx, A> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Matcher")
             .field("matcher_list_len", &self.matcher_list.len())
             .field("has_fallback", &self.on_no_match.is_some())

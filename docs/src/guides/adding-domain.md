@@ -8,7 +8,7 @@ A "domain" in x.uma is a context type with associated `DataInput` implementation
 
 ```text
 proto/xuma/<domain>/v1/    → Proto definitions
-rumi/rumi-domains/src/     → Rust implementations
+rumi/ext/<domain>/src/     → Rust implementations
 ```
 
 ## Step 1: Define Proto
@@ -34,8 +34,8 @@ just gen
 ## Step 3: Implement DataInput
 
 ```rust
-// rumi/rumi-domains/src/http.rs
-use rumi_core::{DataInput, MatchingData};
+// rumi/ext/http/src/lib.rs
+use rumi::{DataInput, MatchingData};
 
 pub struct HttpRequest {
     pub headers: HashMap<String, String>,
@@ -74,13 +74,13 @@ cases:
 ## Step 5: Feature Gate
 
 ```toml
-# rumi/rumi-domains/Cargo.toml
+# rumi/ext/http/Cargo.toml
 [features]
-http = []
+default = []
 ```
 
 ```rust
-// rumi/rumi-domains/src/lib.rs
-#[cfg(feature = "http")]
-pub mod http;
+// rumi/ext/http/src/lib.rs
+pub mod headers;
+pub mod path;
 ```
