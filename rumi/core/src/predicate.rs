@@ -3,11 +3,8 @@
 //! Predicates combine [`DataInput`] and [`InputMatcher`] to create boolean
 //! conditions that can be composed with AND/OR/NOT.
 
-#[cfg(all(not(feature = "std"), feature = "alloc"))]
-use alloc::{boxed::Box, vec::Vec};
-
 use crate::{DataInput, InputMatcher, MatchingData};
-use core::fmt::Debug;
+use std::fmt::Debug;
 
 /// A single predicate: combines a [`DataInput`] with an [`InputMatcher`].
 ///
@@ -70,7 +67,7 @@ impl<Ctx> SinglePredicate<Ctx> {
 }
 
 impl<Ctx> Debug for SinglePredicate<Ctx> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SinglePredicate")
             .field("input", &self.input)
             .field("matcher", &self.matcher)
@@ -177,7 +174,7 @@ impl<Ctx> Predicate<Ctx> {
 }
 
 impl<Ctx> Debug for Predicate<Ctx> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Predicate::Single(p) => f.debug_tuple("Single").field(p).finish(),
             Predicate::And(ps) => f.debug_tuple("And").field(&ps.len()).finish(),

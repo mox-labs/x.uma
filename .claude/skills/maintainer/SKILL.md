@@ -73,13 +73,13 @@ Type URLs: `type.googleapis.com/xuma.http.v1.HeaderInput`
 
 | Adding... | Location | Why |
 |-----------|----------|-----|
-| Matcher evaluation logic | `rumi/rumi-core/src/` | Core, domain-agnostic |
+| Matcher evaluation logic | `rumi/core/src/` | Core, domain-agnostic |
 | New input/action type | `proto/xuma/<domain>/v1/` | Extension, domain-specific |
-| DataInput impl | `rumi/rumi-domains/src/<domain>.rs` | Adapter behind port |
+| DataInput impl | `rumi/ext/<domain>.rs` | Adapter behind port |
 | Python-specific wrapper | `p.uma/python/` | Binding ergonomics |
 | Conformance test case | `spec/tests/<matcher-type>/` | Source of truth |
 
-**The filter:** Does it know about a specific domain (HTTP, Claude, etc.)? → Adapter (rumi-domains), not core.
+**The filter:** Does it know about a specific domain (HTTP, Claude, etc.)? → Adapter (rumi/ext), not core.
 
 ---
 

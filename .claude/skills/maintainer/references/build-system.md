@@ -39,12 +39,12 @@ breaking:
 ```yaml
 version: v2
 plugins:
-  - local: protoc-gen-prost
-    out: rumi/rumi-proto/src/gen
+  - remote: buf.build/community/neoeinstein-prost
+    out: rumi/src/gen
     opt:
       - file_descriptor_set
-  - local: protoc-gen-prost-serde
-    out: rumi/rumi-proto/src/gen
+  - remote: buf.build/community/neoeinstein-prost-serde
+    out: rumi/src/gen
 ```
 
 ### Commands
@@ -79,21 +79,12 @@ just proto          # gen + lint + breaking
 ```
 rumi/
 ├── Cargo.toml       # Workspace root
-├── rumi/            # Facade crate (re-exports)
-├── rumi-core/       # Core engine (no_std)
-├── rumi-proto/      # Proto bindings + registry
-└── rumi-domains/    # Domain adapters
+├── core/            # Core engine (package: rumi)
+└── ext/             # Domain extensions
+    ├── test/        # rumi-test (conformance)
+    ├── http/        # rumi-http
+    └── claude/      # rumi-claude
 ```
-
-### Features
-
-| Feature | Crate | Purpose |
-|---------|-------|---------|
-| `std` (default) | rumi-core | Standard library |
-| `alloc` | rumi-core | no_std with allocator |
-| `test` | rumi-domains | Test domain adapter |
-| `http` | rumi-domains | HTTP domain adapter |
-| `claude` | rumi-domains | Claude Code hooks adapter |
 
 ### Commands
 
@@ -114,9 +105,6 @@ just clippy         # pedantic warnings
 just fmt            # apply formatting
 just fmt-check      # check only (CI)
 
-# Verify no_std
-just build-no-std   # builds with --no-default-features --features alloc
-
 # Docs
 just doc            # generate and open docs
 
@@ -127,13 +115,9 @@ just clean-rust     # remove target/
 ### Build Order
 
 ```
-rumi-core (no deps)
+rumi (core, no deps)
     ↓
-rumi-proto (depends on rumi-core)
-    ↓
-rumi-domains (depends on rumi-core, rumi-proto)
-    ↓
-rumi (facade, depends on all)
+rumi-test, rumi-http, rumi-claude (depend on rumi)
 ```
 
 ### Publish Order
@@ -143,10 +127,8 @@ rumi (facade, depends on all)
 just publish-dry-run
 
 # Then publish in order:
-# 1. rumi-core
-# 2. rumi-proto
-# 3. rumi-domains
-# 4. rumi
+# 1. rumi (core)
+# 2. rumi-test, rumi-http, rumi-claude (extensions)
 ```
 
 ---
@@ -212,7 +194,6 @@ buf breaking --against origin/main
 cargo fmt --all -- --check
 cargo clippy --workspace -- -W clippy::pedantic -D warnings
 cargo test --workspace
-cargo build --no-default-features --features alloc  # no_std check
 
 # 3. Constraints
 ./scripts/check-constraints.sh
@@ -232,7 +213,6 @@ cargo build --no-default-features --features alloc  # no_std check
 | `just clippy` | Lint with pedantic |
 | `just fmt` | Format code |
 | `just fmt-check` | Check formatting |
-| `just build-no-std` | Verify no_std compat |
 | `just doc` | Generate docs |
 | `just clean` | Clean all targets |
 | `just watch` | Watch mode for development |

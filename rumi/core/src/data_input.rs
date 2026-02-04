@@ -6,11 +6,8 @@
 //! This is generic over the context type `Ctx`, but returns domain-agnostic `MatchingData`,
 //! enabling `InputMatchers` to be shared across different domains.
 
-#[cfg(all(not(feature = "std"), feature = "alloc"))]
-use alloc::boxed::Box;
-
 use crate::MatchingData;
-use core::fmt::Debug;
+use std::fmt::Debug;
 
 /// Extracts data from a domain-specific context.
 ///
@@ -30,7 +27,7 @@ use core::fmt::Debug;
 /// # Example
 ///
 /// ```ignore
-/// use rumi_core::{DataInput, MatchingData};
+/// use rumi::{DataInput, MatchingData};
 ///
 /// #[derive(Debug)]
 /// struct HeaderInput { name: String }

@@ -34,7 +34,7 @@ You audit the x.uma codebase for compliance with the 9 arch-guild constraints.
    - Check trait bounds → should include Send+Sync+Debug
    
 2. **Review implementations:**
-   - Read `rumi-core/src/lib.rs` for core trait definitions
+   - Read `rumi/core/src/lib.rs` for core trait definitions
    - Verify no domain-specific logic in core
    - Check for recursive evaluate() calls
 
@@ -65,7 +65,7 @@ No fancy-regex usage found.
 
 #### 2. Max Depth: WARN
 MAX_DEPTH constant not found. May be implemented differently.
-Check: rumi-core/src/lib.rs
+Check: rumi/core/src/lib.rs
 
 ...
 ```

@@ -21,7 +21,6 @@ Run these validations in sequence:
    cd ~/mox/x.uma && cargo fmt --manifest-path rumi/Cargo.toml --all -- --check
    cd ~/mox/x.uma && cargo clippy --manifest-path rumi/Cargo.toml --workspace -- -W clippy::pedantic -D warnings
    cd ~/mox/x.uma && cargo test --manifest-path rumi/Cargo.toml --workspace
-   cd ~/mox/x.uma && cargo build --manifest-path rumi/Cargo.toml -p rumi-core --no-default-features --features alloc
    ```
 
 3. **Constraint check:**

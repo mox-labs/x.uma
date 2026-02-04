@@ -4,7 +4,7 @@
 //! The top-level `Matcher` contains a list of field matchers.
 
 use crate::{OnMatch, Predicate};
-use core::fmt::Debug;
+use std::fmt::Debug;
 
 /// A field matcher: predicate + `on_match`.
 ///
@@ -50,7 +50,7 @@ impl<Ctx, A: Clone + Send + Sync + 'static> FieldMatcher<Ctx, A> {
 }
 
 impl<Ctx, A: Clone + Send + Sync + Debug + 'static> Debug for FieldMatcher<Ctx, A> {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("FieldMatcher")
             .field("predicate", &self.predicate)
             .field("on_match", &self.on_match)
