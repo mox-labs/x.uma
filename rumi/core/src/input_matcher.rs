@@ -329,10 +329,18 @@ impl StringMatcher {
     }
 
     /// Create a contains match.
+    ///
+    /// When `ignore_case` is true, the pattern is pre-lowercased at construction
+    /// to avoid redundant allocation per match call.
     #[must_use]
     pub fn contains(value: impl Into<String>, ignore_case: bool) -> Self {
+        let value = value.into();
         Self::Contains {
-            value: value.into(),
+            value: if ignore_case {
+                value.to_ascii_lowercase()
+            } else {
+                value
+            },
             ignore_case,
         }
     }
@@ -396,9 +404,8 @@ impl InputMatcher for StringMatcher {
             }
             Self::Contains { value, ignore_case } => {
                 if *ignore_case {
-                    input
-                        .to_ascii_lowercase()
-                        .contains(&value.to_ascii_lowercase())
+                    // value is pre-lowercased at construction time
+                    input.to_ascii_lowercase().contains(value.as_str())
                 } else {
                     input.contains(value.as_str())
                 }
