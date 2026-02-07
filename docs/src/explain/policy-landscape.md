@@ -1,6 +1,6 @@
 # Policy Landscape
 
-Where x.uma fits in the broader policy engine ecosystem, and why `xuma.act` targets the agent tool control gap.
+Where x.uma fits in the broader policy engine ecosystem, and why agent tool control is greenfield territory.
 
 ## x.uma IS a Policy Engine
 
@@ -120,7 +120,7 @@ The architecture makes this natural:
 ```text
 ┌─────────────────────────────────┐
 │       Domain Adapters           │
-│  xuma.http  xuma.act  xuma.grpc │
+│  xuma.http  xuma.claude  xuma.grpc │
 └───────────────┬─────────────────┘
                 │
 ┌───────────────▼─────────────────┐
@@ -135,7 +135,7 @@ The architecture makes this natural:
 └─────────────────────────────────┘
 ```
 
-Adding agent tool control is just another domain adapter. Core unchanged.
+Adding Claude Code hooks is just another domain adapter. Core unchanged. Adding MCP, OpenAI, or any other agent framework would be another.
 
 ### Cross-Language Reality
 
@@ -163,9 +163,17 @@ x.uma doesn't invent new policy semantics. It implements xDS Unified Matcher API
 
 You're not betting on a new policy language. You're using Google's battle-tested approach in a new domain.
 
-## xuma.act — Agent Control of Tools
+## xuma.claude — Claude Code as First Agent Domain
 
-The `xuma.act` domain applies x.uma's matcher architecture to agent tool control.
+The `xuma.claude.v1` domain applies x.uma's matcher architecture to Claude Code's hook event system — the first concrete agent adapter.
+
+### Why Start with Claude Code?
+
+Claude Code has a rich hook event model with 9 event types spanning tool lifecycle, agent lifecycle, user interaction, and session management. This makes it an ideal first domain adapter:
+
+- **Structured context**: Every hook receives `session_id`, `cwd`, `permission_mode`, plus event-specific fields
+- **Multiple decision models**: allow/deny/ask + modify (tools), approve/block (stop), feedback (post-tool)
+- **Real enforcement point**: Hooks ARE a Policy Enforcement Point (PEP) — x.uma becomes the PDP behind them
 
 ### Mapping the PARC Model
 
@@ -180,7 +188,7 @@ Cedar's PARC model (Principal-Action-Resource-Context) maps naturally to agent s
 
 ### Decision Model Spectrum
 
-`xuma.act` supports the full decision spectrum:
+Agent policy engines need to support the full decision spectrum:
 
 **Binary:** Allow or deny.
 ```yaml
@@ -202,18 +210,18 @@ action: {
 }
 ```
 
-This mirrors Claude Code's hook model (allow/deny/ask + modify) but generalizes to any agent framework.
+Claude Code's hook model (allow/deny/ask + modify) is the richest in the industry. Starting here means the architecture handles simpler models (binary, ternary) by subsumption.
 
 ### Proto Namespace
 
-`xuma.act.v1` is the proto package for agent tool control.
+`xuma.claude.v1` is the proto package for Claude Code hooks.
 
 Type URLs follow the standard pattern:
-- `type.googleapis.com/xuma.act.v1.ToolInvocation`
-- `type.googleapis.com/xuma.act.v1.AgentContext`
-- `type.googleapis.com/xuma.act.v1.Decision`
+- `type.googleapis.com/xuma.claude.v1.HookContext`
+- `type.googleapis.com/xuma.claude.v1.AllowAction`
+- `type.googleapis.com/xuma.claude.v1.BlockAction`
 
-First implementation target: Claude Code hooks. The adapter translates Claude's hook context into `ToolInvocation`, evaluates via matcher tree, returns `Decision`.
+The hexagonal architecture means adding other agent frameworks is just another domain adapter — `xuma.mcp.v1`, `xuma.openai.v1`, etc. — without touching core or the Claude adapter.
 
 ## Comparison to Established Engines
 
@@ -222,7 +230,7 @@ First implementation target: Claude Code hooks. The adapter translates Claude's 
 | **Language** | Rego (Datalog) | Cedar (custom) | Matcher trees (compiled from proto) |
 | **Model** | Input→Rules→JSON | PARC→permit/forbid | Context→Predicates→Action |
 | **Domain focus** | Agnostic | Authorization | Agnostic |
-| **Agent-native** | No | Partial (AgentCore uses it) | Yes (`xuma.act` first-class) |
+| **Agent-native** | No | Partial (AgentCore uses it) | Yes (`xuma.claude` first, more domains planned) |
 | **Cross-language** | Go + WASM bindings | Rust + Java bindings | Rust, Python, TypeScript (native + bindings) |
 | **Formal verification** | No | Yes (Dafny proofs) | Type safety + depth limits + linear-time regex |
 | **Extension model** | Rego functions | Cedar extensions (limited) | `TypedExtensionConfig` (open) |
@@ -241,7 +249,7 @@ First implementation target: Claude Code hooks. The adapter translates Claude's 
 - Classic authorization (PARC model is natural)
 
 **Use x.uma if:**
-- Agent tool control is your domain
+- Agent event policy is your domain
 - Polyglot codebase (Rust + Python + TypeScript)
 - You want Envoy-proven semantics
 - Domain adapters fit your architecture
@@ -254,13 +262,15 @@ x.uma is alpha (v0.1). This is the roadmap:
 
 **Phase 6-7 (current):** Complete `bumi` (TypeScript) and Rust bindings (`puma-crusty`, `bumi-crusty`).
 
-**Phase 8:** `xuma.act` domain with Claude Code adapter.
+**Phase 8:** Enrich `xuma.claude.v1` with full hook event model.
 
 **Phase 9:** Benchmarks. Prove performance against native implementations.
 
 **v1.0:** Lock core traits. Extension ecosystem opens.
 
-The goal is simple: make x.uma the policy engine for agent tool control. Not by inventing new semantics, but by bringing battle-tested xDS matchers to the agent domain.
+**Beyond v1.0:** Additional agent domains (`xuma.mcp`, `xuma.openai`) as the need materializes. The vendor-agnostic agent policy standard emerges from concrete implementations, not from premature abstraction.
+
+No established standard exists for AI agent tool policy. This is greenfield. x.uma's approach — start concrete with one agent (Claude Code), prove the architecture, then generalize — is how standards earn adoption.
 
 The gap exists. The need is recognized (OWASP, MIT Tech Review, AWS AgentCore). x.uma fills it with production-proven architecture, cross-language support, and domain-agnostic design.
 

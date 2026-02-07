@@ -25,7 +25,7 @@ x.uma follows ACES principles using hexagonal architecture (ports & adapters) to
 ```
                     ┌─────────────────────────────────┐
                     │         Domain Adapters         │
-                    │ xuma.http xuma.act xuma.grpc │
+                    │ xuma.http xuma.claude xuma.grpc │
                     └───────────────┬─────────────────┘
                                     │
                     ┌───────────────▼─────────────────┐
@@ -72,14 +72,14 @@ All x.uma extensions use the `xuma` proto package namespace:
 xuma.core.v1      # Base types, registry
 xuma.test.v1      # Conformance testing
 xuma.http.v1      # HTTP matching
-xuma.act.v1       # Agent tool control (ACT)
+xuma.claude.v1    # Claude Code hooks
 xuma.grpc.v1      # gRPC matching
 ```
 
 Type URLs:
 - `type.googleapis.com/xuma.test.v1.StringInput`
 - `type.googleapis.com/xuma.http.v1.HeaderInput`
-- `type.googleapis.com/xuma.act.v1.ToolInvocation`
+- `type.googleapis.com/xuma.claude.v1.HookContext`
 
 ## Project Structure
 
@@ -206,7 +206,7 @@ rumi/
 ├── ext/
 │   ├── test/           # rumi-test (conformance)
 │   ├── http/           # rumi-http (HTTP matching)
-│   └── act/            # rumi-act (agent tool control)
+│   └── claude/         # rumi-claude (Claude Code hooks)
 └── crusts/             # Language bindings (🦀 crustacean → crusty)
     ├── python/         # uniffi → puma-crusty wheel (maturin)
     └── wasm/           # wasm-bindgen → @x.uma/bumi-crusty (wasm-pack)

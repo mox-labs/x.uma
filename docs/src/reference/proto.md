@@ -13,7 +13,7 @@
 | `xuma.core.v1` | Base types, registry |
 | `xuma.test.v1` | Conformance testing inputs |
 | `xuma.http.v1` | HTTP domain (headers, path, method) |
-| `xuma.act.v1` | Agent tool control (ACT) domain |
+| `xuma.claude.v1` | Claude Code hooks domain |
 
 ## Type URLs
 
@@ -21,7 +21,7 @@
 type.googleapis.com/xuma.core.v1.TypedExtensionConfig
 type.googleapis.com/xuma.test.v1.StringInput
 type.googleapis.com/xuma.http.v1.HeaderInput
-type.googleapis.com/xuma.act.v1.ToolInvocation
+type.googleapis.com/xuma.claude.v1.HookContext
 ```
 
 ## Source

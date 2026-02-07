@@ -13,7 +13,7 @@
 | [`rumi`](../generated/rust/rumi/index.html) | Core engine |
 | [`rumi-test`](../generated/rust/rumi_test/index.html) | Conformance testing |
 | [`rumi-http`](../generated/rust/rumi_http/index.html) | HTTP matching |
-| [`rumi-act`](../generated/rust/rumi_act/index.html) | Agent tool control |
+| [`rumi-claude`](../generated/rust/rumi_claude/index.html) | Claude Code hooks |
 
 ## Quick Links
 

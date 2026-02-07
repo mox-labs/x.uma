@@ -9,7 +9,7 @@ Why x.uma is built the way it is, and how the same architecture maps across Rust
 ```text
 ┌─────────────────────────────────────┐
 │         Domain Adapters             │
-│   xuma.http  xuma.act  xuma.grpc │
+│   xuma.http  xuma.claude  xuma.grpc │
 └───────────────┬─────────────────────┘
                 │
 ┌───────────────▼─────────────────────┐
@@ -229,7 +229,7 @@ rumi/
 └── ext/                # Domain extensions
     ├── test/           # rumi-test (conformance)
     ├── http/           # rumi-http
-    └── act/            # rumi-act (agent tool control)
+    └── claude/         # rumi-claude (Claude Code hooks)
 ```
 
 Dependencies point inward. Core knows nothing about domains.
