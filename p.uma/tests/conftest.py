@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import yaml
 
@@ -36,9 +36,7 @@ from puma.http import (
     HttpRouteMatch,
     compile_route_matches,
 )
-
-if TYPE_CHECKING:
-    from puma._types import MatchingValue
+from puma.testing import DictInput
 
 SPEC_DIR = Path(__file__).resolve().parent.parent.parent / "spec" / "tests"
 
@@ -63,19 +61,6 @@ class HttpFixtureCase:
     matcher: Matcher[Any, str]
     request: HttpRequest
     expect: str | None
-
-
-# ─── DictInput: reads a key from a dict context ─────────────────────────────
-
-
-@dataclass(frozen=True, slots=True)
-class DictInput:
-    """DataInput that reads a key from a dict context."""
-
-    key: str
-
-    def get(self, ctx: dict[str, str], /) -> MatchingValue:
-        return ctx.get(self.key)
 
 
 # ─── YAML → puma type conversion ────────────────────────────────────────────
