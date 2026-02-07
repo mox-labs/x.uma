@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
-
 import pytest
 
 from puma import (
@@ -17,17 +14,7 @@ from puma import (
     NestedMatcher,
     SinglePredicate,
 )
-
-if TYPE_CHECKING:
-    from puma._types import MatchingValue
-
-
-@dataclass(frozen=True)
-class ValueInput:
-    key: str
-
-    def get(self, ctx: dict[str, str], /) -> MatchingValue:
-        return ctx.get(self.key)
+from puma.testing import DictInput
 
 
 class TestMatcher:
@@ -35,11 +22,11 @@ class TestMatcher:
         m = Matcher(
             matcher_list=(
                 FieldMatcher(
-                    SinglePredicate(ValueInput("x"), ExactMatcher("a")),
+                    SinglePredicate(DictInput("x"), ExactMatcher("a")),
                     Action("first"),
                 ),
                 FieldMatcher(
-                    SinglePredicate(ValueInput("x"), ExactMatcher("a")),
+                    SinglePredicate(DictInput("x"), ExactMatcher("a")),
                     Action("second"),
                 ),
             ),
@@ -50,7 +37,7 @@ class TestMatcher:
         m = Matcher(
             matcher_list=(
                 FieldMatcher(
-                    SinglePredicate(ValueInput("x"), ExactMatcher("a")),
+                    SinglePredicate(DictInput("x"), ExactMatcher("a")),
                     Action("hit"),
                 ),
             ),
@@ -61,7 +48,7 @@ class TestMatcher:
         m = Matcher(
             matcher_list=(
                 FieldMatcher(
-                    SinglePredicate(ValueInput("x"), ExactMatcher("a")),
+                    SinglePredicate(DictInput("x"), ExactMatcher("a")),
                     Action("hit"),
                 ),
             ),
@@ -86,7 +73,7 @@ class TestNestedMatcher:
         inner = Matcher(
             matcher_list=(
                 FieldMatcher(
-                    SinglePredicate(ValueInput("y"), ExactMatcher("b")),
+                    SinglePredicate(DictInput("y"), ExactMatcher("b")),
                     Action("nested_hit"),
                 ),
             ),
@@ -94,7 +81,7 @@ class TestNestedMatcher:
         outer = Matcher(
             matcher_list=(
                 FieldMatcher(
-                    SinglePredicate(ValueInput("x"), ExactMatcher("a")),
+                    SinglePredicate(DictInput("x"), ExactMatcher("a")),
                     NestedMatcher(inner),
                 ),
             ),
@@ -106,7 +93,7 @@ class TestNestedMatcher:
         inner = Matcher(
             matcher_list=(
                 FieldMatcher(
-                    SinglePredicate(ValueInput("y"), ExactMatcher("b")),
+                    SinglePredicate(DictInput("y"), ExactMatcher("b")),
                     Action("nested_hit"),
                 ),
             ),
@@ -114,11 +101,11 @@ class TestNestedMatcher:
         outer = Matcher(
             matcher_list=(
                 FieldMatcher(
-                    SinglePredicate(ValueInput("x"), ExactMatcher("a")),
+                    SinglePredicate(DictInput("x"), ExactMatcher("a")),
                     NestedMatcher(inner),
                 ),
                 FieldMatcher(
-                    SinglePredicate(ValueInput("x"), ExactMatcher("a")),
+                    SinglePredicate(DictInput("x"), ExactMatcher("a")),
                     Action("fallthrough"),
                 ),
             ),
@@ -133,7 +120,7 @@ class TestDepthValidation:
         Matcher(
             matcher_list=(
                 FieldMatcher(
-                    SinglePredicate(ValueInput("x"), ExactMatcher("a")),
+                    SinglePredicate(DictInput("x"), ExactMatcher("a")),
                     Action("hit"),
                 ),
             ),
@@ -144,7 +131,7 @@ class TestDepthValidation:
         inner: Matcher[dict[str, str], str] = Matcher(
             matcher_list=(
                 FieldMatcher(
-                    SinglePredicate(ValueInput("x"), ExactMatcher("a")),
+                    SinglePredicate(DictInput("x"), ExactMatcher("a")),
                     Action("deep"),
                 ),
             ),
@@ -154,7 +141,7 @@ class TestDepthValidation:
             current = Matcher(
                 matcher_list=(
                     FieldMatcher(
-                        SinglePredicate(ValueInput("x"), ExactMatcher("a")),
+                        SinglePredicate(DictInput("x"), ExactMatcher("a")),
                         NestedMatcher(current),
                     ),
                 ),
@@ -166,7 +153,7 @@ class TestDepthValidation:
         inner: Matcher[dict[str, str], str] = Matcher(
             matcher_list=(
                 FieldMatcher(
-                    SinglePredicate(ValueInput("x"), ExactMatcher("a")),
+                    SinglePredicate(DictInput("x"), ExactMatcher("a")),
                     Action("deep"),
                 ),
             ),
@@ -176,7 +163,7 @@ class TestDepthValidation:
             current = Matcher(
                 matcher_list=(
                     FieldMatcher(
-                        SinglePredicate(ValueInput("x"), ExactMatcher("a")),
+                        SinglePredicate(DictInput("x"), ExactMatcher("a")),
                         NestedMatcher(current),
                     ),
                 ),
@@ -187,7 +174,7 @@ class TestDepthValidation:
             Matcher(
                 matcher_list=(
                     FieldMatcher(
-                        SinglePredicate(ValueInput("x"), ExactMatcher("a")),
+                        SinglePredicate(DictInput("x"), ExactMatcher("a")),
                         NestedMatcher(current),
                     ),
                 ),
