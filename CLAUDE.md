@@ -7,10 +7,10 @@ A matcher ecosystem implementing the xDS Unified Matcher API across multiple lan
 | Package | Language | Notes |
 |---------|----------|-------|
 | **rumi** | Rust | Core engine (reference implementation) |
-| **p.uma** | Python | Pure Python implementation |
-| **b.uma** | Bun/TypeScript | Pure TypeScript implementation |
-| **p.uma[crusty]** | Python | Rust bindings via uniffi |
-| **@x.uma/crusty** | TypeScript | Rust bindings via WASM |
+| **p.uma** | Python | Pure Python implementation (package: `puma`) |
+| **b.uma** | Bun/TypeScript | Pure TypeScript implementation (package: `@x.uma/buma`) |
+| **puma-crusty** | Python | Rust bindings via uniffi (from `rumi/crusts/python/`) |
+| **@x.uma/buma-crusty** | TypeScript | Rust bindings via WASM (from `rumi/crusts/wasm/`) |
 
 All implementations pass the same conformance test suite (`spec/tests/`).
 
@@ -90,12 +90,9 @@ x.uma/
 │   └── xuma/                   # x.uma extensions (namespace: xuma.*)
 ├── spec/
 │   └── tests/                  # conformance test fixtures (YAML)
-├── rumi/                       # Rust core (reference implementation)
-├── p.uma/                      # Pure Python implementation
-├── b.uma/                      # Pure Bun/TypeScript implementation
-├── crusty/                     # Rust→FFI bindings (uniffi)
-│   ├── p.uma/                  # Python bindings
-│   └── b.uma/                  # WASM bindings
+├── rumi/                       # Rust workspace (core + extensions + crusts)
+├── p.uma/                      # Pure Python implementation (package: puma)
+├── b.uma/                      # Pure Bun/TypeScript implementation (@x.uma/buma)
 ├── docs/                       # mdBook documentation
 └── justfile                    # polyglot task orchestration
 ```
@@ -109,11 +106,12 @@ x.uma/
 | 2 | Conformance Fixtures | ✅ Done |
 | 2.5 | Extensible MatchingData (`Custom` variant) | ✅ Done |
 | 3 | StringMatcher, MatcherTree, RadixTree | ✅ Done |
-| 4 | HTTP Domain (ext_proc model) | 🚧 Next |
-| 5 | p.uma (Pure Python + HTTP) | Planned |
-| 6 | b.uma (Bun/TypeScript + HTTP) | Planned |
-| 7 | crusty/p.uma (uniffi→Python) | Planned |
-| 8 | crusty/b.uma (uniffi→WASM) | Planned |
+| 4 | HTTP Domain (ext_proc model) | ✅ Done |
+| 5 | p.uma (Pure Python + HTTP) | ✅ Done |
+| 5.1 | p.uma arch-guild hardening | ✅ Done |
+| 6 | b.uma (Bun/TypeScript + HTTP) | 🚧 Next |
+| 7 | rumi/crusts/python (uniffi→puma-crusty) | Planned |
+| 8 | rumi/crusts/wasm (wasm-pack→@x.uma/buma-crusty) | Planned |
 | 9 | Benchmarks (all variants) | Planned |
 
 ## Tooling
@@ -205,10 +203,13 @@ rumi/
 │   └── src/
 │       ├── lib.rs
 │       ├── matcher.rs, predicate.rs, ...
-└── ext/
-    ├── test/           # rumi-test (conformance)
-    ├── http/           # rumi-http (HTTP matching)
-    └── claude/         # rumi-claude (Claude Code hooks)
+├── ext/
+│   ├── test/           # rumi-test (conformance)
+│   ├── http/           # rumi-http (HTTP matching)
+│   └── claude/         # rumi-claude (Claude Code hooks)
+└── crusts/             # Language bindings (🦀 crustacean → crusty)
+    ├── python/         # uniffi → puma-crusty wheel (maturin)
+    └── wasm/           # wasm-bindgen → @x.uma/buma-crusty (wasm-pack)
 ```
 
 **Extension pattern:** Users depend on an extension crate, get core transitively:

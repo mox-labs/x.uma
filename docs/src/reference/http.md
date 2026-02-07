@@ -1,20 +1,28 @@
 # HTTP Domain Reference
 
-`rumi-http` provides HTTP request matching for Envoy ext_proc.
+HTTP request matching across rumi (Rust) and puma (Python).
 
-## Architecture
+## Overview
+
+Both implementations provide the same HTTP matching capabilities with Gateway API-style config and DataInput implementations for HTTP contexts.
+
+**For Python users:** See [Python API Reference](python.md) for the `puma.http` module.
+
+**This page focuses on Rust (rumi-http).**
+
+## Architecture (rumi-http)
 
 ```
 Gateway API HttpRouteMatch (config)
         ↓ compile()
-rumi Matcher<ProcessingRequest, A>
+rumi Matcher<HttpMessage, A>
         ↓ evaluate()
 ext_proc ProcessingRequest (runtime)
 ```
 
 **Two layers:**
 - **User API**: Gateway API `HttpRouteMatch` — human-friendly config
-- **Data Plane API**: Envoy `ProcessingRequest` — wire protocol
+- **Data Plane API**: Envoy `ProcessingRequest` — wire protocol (indexed as `HttpMessage`)
 
 ## Quick Start
 
@@ -29,12 +37,12 @@ let route_match = HttpRouteMatch {
 };
 let matcher = route_match.compile("api_backend");
 
-// Runtime: evaluate against ext_proc ProcessingRequest
-let result = matcher.evaluate(&processing_request);
+// Runtime: evaluate against HttpMessage (indexed view over ProcessingRequest)
+let result = matcher.evaluate(&http_message);
 assert_eq!(result, Some("api_backend"));
 ```
 
-## DataInputs for ProcessingRequest
+## DataInputs for HttpMessage
 
 | Input | Extracts | Example |
 |-------|----------|---------|
@@ -133,26 +141,38 @@ let matches = vec![
 let matcher = compile_route_matches(&matches, "backend", None);
 ```
 
-## Testing with SimpleHttpRequest
+## Python Equivalent
 
-For unit tests without constructing full `ProcessingRequest`:
+See [Python API Reference](python.md) for the Python implementation.
 
+Quick comparison:
+
+**Rust (rumi-http):**
 ```rust
-use rumi_http::prelude::*;
+use rumi_http::{HttpRouteMatch, HttpPathMatch, compile_route_matches};
 
-let request = HttpRequest::builder()
-    .method("POST")
-    .path("/api/users")
-    .header("Content-Type", "application/json")
-    .query_param("page", "1")
-    .build();
-
-// Use Simple*Input types for matching
-let method_input = SimpleMethodInput;
-assert_eq!(method_input.get(&request), MatchingData::String("POST".into()));
+let route = HttpRouteMatch {
+    path: Some(HttpPathMatch::PathPrefix { value: "/api".into() }),
+    method: Some("GET".into()),
+    ..Default::default()
+};
+let matcher = route.compile("api_backend");
 ```
 
-## Dependencies
+**Python (puma.http):**
+```python
+from puma.http import HttpRouteMatch, HttpPathMatch, compile_route_matches
+
+route = HttpRouteMatch(
+    path=HttpPathMatch(type="PathPrefix", value="/api"),
+    method="GET",
+)
+matcher = route.compile("api_backend")
+```
+
+Both produce functionally identical matchers that pass the same conformance tests.
+
+## Dependencies (Rust)
 
 | Crate | Purpose |
 |-------|---------|
@@ -161,5 +181,6 @@ assert_eq!(method_input.get(&request), MatchingData::String("POST".into()));
 
 ## See Also
 
+- [Python API Reference](python.md) — puma.http module
 - [Gateway API HTTPRoute Spec](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRouteMatch)
 - [Envoy ext_proc Documentation](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/ext_proc_filter)
