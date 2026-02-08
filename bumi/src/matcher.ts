@@ -39,7 +39,7 @@ export class FieldMatcher<Ctx, A> {
  */
 export class Matcher<Ctx, A> {
 	constructor(
-		readonly matcherList: readonly FieldMatcher<Ctx, A>[],
+		readonly matchers: readonly FieldMatcher<Ctx, A>[],
 		readonly onNoMatch: OnMatch<Ctx, A> | null = null,
 	) {
 		this.validate();
@@ -47,7 +47,7 @@ export class Matcher<Ctx, A> {
 
 	/** Evaluate in order, return first match. */
 	evaluate(ctx: Ctx): A | null {
-		for (const fm of this.matcherList) {
+		for (const fm of this.matchers) {
 			if (evaluatePredicate(fm.predicate, ctx)) {
 				const result = evaluateOnMatch(fm.onMatch, ctx);
 				if (result !== null) return result;
@@ -72,7 +72,7 @@ export class Matcher<Ctx, A> {
 	depth(): number {
 		let maxPredicate = 0;
 		let maxNested = 0;
-		for (const fm of this.matcherList) {
+		for (const fm of this.matchers) {
 			maxPredicate = Math.max(maxPredicate, predicateDepth(fm.predicate));
 			maxNested = Math.max(maxNested, onMatchDepth(fm.onMatch));
 		}

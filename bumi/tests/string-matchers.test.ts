@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+import { MatcherError } from "../src/matcher.ts";
 import {
 	ContainsMatcher,
 	ExactMatcher,
@@ -129,7 +130,11 @@ describe("RegexMatcher", () => {
 		expect(new RegexMatcher("\\d+").matches(null)).toBe(false);
 	});
 
-	it("throws on invalid regex", () => {
-		expect(() => new RegexMatcher("[invalid")).toThrow();
+	it("throws MatcherError on invalid regex", () => {
+		expect(() => new RegexMatcher("[invalid")).toThrow(MatcherError);
+	});
+
+	it("includes pattern in error message", () => {
+		expect(() => new RegexMatcher("[unclosed")).toThrow(/\[unclosed/);
 	});
 });
