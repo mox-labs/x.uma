@@ -18,7 +18,7 @@ New domains plug in without touching core.
 
 ```text
 Adding HTTP support? → Create rumi/ext/http/
-Adding Claude hooks? → Create rumi/ext/claude/
+Adding Claude Code hooks? → Create rumi/ext/claude/
 Core unchanged.
 ```
 

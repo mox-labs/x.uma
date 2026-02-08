@@ -21,6 +21,7 @@
 
 - [Architecture](explain/architecture.md)
 - [Why ACES](explain/why-aces.md)
+- [Policy Landscape](explain/policy-landscape.md)
 
 ---
 
@@ -28,6 +29,7 @@
 
 - [Proto API](reference/proto.md)
 - [Rust API](reference/rust.md)
+- [Python API](reference/python.md)
 - [HTTP Domain](reference/http.md)
 
 ---
