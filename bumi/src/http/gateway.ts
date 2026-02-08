@@ -5,7 +5,7 @@
  * Pure TypeScript types mirroring the Gateway API spec (no k8s dependency).
  */
 
-import { Action, FieldMatcher, Matcher } from "../matcher.ts";
+import { Action, FieldMatcher, Matcher, MatcherError } from "../matcher.ts";
 import { And, Or, SinglePredicate } from "../predicate.ts";
 import type { Predicate } from "../predicate.ts";
 import { ExactMatcher, PrefixMatcher, RegexMatcher } from "../string-matchers.ts";
@@ -46,7 +46,12 @@ export function compileRouteMatch<A>(
 	return new Matcher([new FieldMatcher(predicate, new Action(action))]);
 }
 
-/** Compile multiple route matches (ORed) into a single Matcher. */
+/**
+ * Compile multiple route matches (ORed) into a single Matcher.
+ *
+ * An empty `matches` array creates a catch-all matcher that matches every
+ * request (Gateway API semantics: no conditions = match all).
+ */
 export function compileRouteMatches<A>(
 	matches: readonly HttpRouteMatch[],
 	action: A,
@@ -107,7 +112,7 @@ function compilePathMatch(pm: HttpPathMatch): SinglePredicate<HttpRequest> {
 		case "RegularExpression":
 			return new SinglePredicate(new PathInput(), new RegexMatcher(pm.value));
 		default:
-			throw new Error(`Unknown path match type: ${pm.type}`);
+			throw new MatcherError(`Unknown path match type: ${pm.type}`);
 	}
 }
 
@@ -119,7 +124,7 @@ function compileHeaderMatch(hm: HttpHeaderMatch): SinglePredicate<HttpRequest> {
 		case "RegularExpression":
 			return new SinglePredicate(input, new RegexMatcher(hm.value));
 		default:
-			throw new Error(`Unknown header match type: ${hm.type}`);
+			throw new MatcherError(`Unknown header match type: ${hm.type}`);
 	}
 }
 
@@ -131,6 +136,6 @@ function compileQueryParamMatch(qm: HttpQueryParamMatch): SinglePredicate<HttpRe
 		case "RegularExpression":
 			return new SinglePredicate(input, new RegexMatcher(qm.value));
 		default:
-			throw new Error(`Unknown query param match type: ${qm.type}`);
+			throw new MatcherError(`Unknown query param match type: ${qm.type}`);
 	}
 }

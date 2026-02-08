@@ -12,13 +12,16 @@ export class HttpRequest {
 	constructor(
 		readonly method: string = "GET",
 		readonly rawPath: string = "/",
-		readonly headers: Readonly<Record<string, string>> = {},
+		readonly headers: Readonly<Record<string, string>> = Object.create(null) as Record<
+			string,
+			string
+		>,
 	) {
 		const qIdx = rawPath.indexOf("?");
 		if (qIdx >= 0) {
 			this.path = rawPath.slice(0, qIdx);
 			const queryString = rawPath.slice(qIdx + 1);
-			const params: Record<string, string> = {};
+			const params: Record<string, string> = Object.create(null) as Record<string, string>;
 			for (const part of queryString.split("&")) {
 				const eqIdx = part.indexOf("=");
 				if (eqIdx >= 0) {
@@ -33,7 +36,7 @@ export class HttpRequest {
 			this.queryParams = {};
 		}
 
-		this.lowerHeaders = {};
+		this.lowerHeaders = Object.create(null) as Record<string, string>;
 		for (const [k, v] of Object.entries(headers)) {
 			this.lowerHeaders[k.toLowerCase()] = v;
 		}

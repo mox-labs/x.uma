@@ -1,3 +1,4 @@
+import { MatcherError } from "./matcher.ts";
 import type { MatchingValue } from "./types.ts";
 
 /** Exact string equality. Pre-lowercases at construction when ignore_case. */
@@ -83,7 +84,13 @@ export class RegexMatcher {
 	private readonly compiled: RegExp;
 
 	constructor(readonly pattern: string) {
-		this.compiled = new RegExp(pattern);
+		try {
+			this.compiled = new RegExp(pattern);
+		} catch (e) {
+			throw new MatcherError(
+				`invalid regex pattern "${pattern}": ${e instanceof Error ? e.message : String(e)}`,
+			);
+		}
 	}
 
 	matches(value: MatchingValue): boolean {

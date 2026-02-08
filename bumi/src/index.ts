@@ -1,5 +1,7 @@
 // Core types
 export type { DataInput, InputMatcher, MatchingValue } from "./types.ts";
+// HTTP domain: import from "bumi/http"
+// Test utilities (DictInput): import from "bumi/testing"
 
 // Predicates
 export { And, Not, Or, SinglePredicate, evaluatePredicate, predicateDepth } from "./predicate.ts";
