@@ -2,7 +2,7 @@
  * The erased data type — TypeScript's union replaces Rust's MatchingData enum.
  * `null` maps to MatchingData::None / Python's None.
  */
-export type MatchingValue = string | number | boolean | Uint8Array | null;
+export type MatchingData = string | number | boolean | Uint8Array | null;
 
 /**
  * Extract a value from a domain-specific context.
@@ -11,7 +11,7 @@ export type MatchingValue = string | number | boolean | Uint8Array | null;
  * "data not available" — the predicate evaluates to `false`.
  */
 export interface DataInput<Ctx> {
-	get(ctx: Ctx): MatchingValue;
+	get(ctx: Ctx): MatchingData;
 }
 
 /**
@@ -22,5 +22,5 @@ export interface DataInput<Ctx> {
  * not the predicate level.
  */
 export interface InputMatcher {
-	matches(value: MatchingValue): boolean;
+	matches(value: MatchingData): boolean;
 }

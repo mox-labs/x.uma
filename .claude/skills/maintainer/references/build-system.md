@@ -133,12 +133,12 @@ just publish-dry-run
 
 ---
 
-## Python Pipeline (p.uma)
+## Python Pipeline (puma)
 
 ### Setup
 
 ```bash
-cd p.uma
+cd puma
 uv sync              # Create venv, install deps
 ```
 

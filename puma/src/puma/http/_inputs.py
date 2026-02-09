@@ -1,7 +1,7 @@
 """DataInput implementations for HttpRequest.
 
 Each input extracts a specific field from an HttpRequest context
-and returns it as a MatchingValue for predicate evaluation.
+and returns it as a MatchingData for predicate evaluation.
 """
 
 from __future__ import annotations
@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from puma._types import MatchingValue
+    from puma._types import MatchingData
     from puma.http._request import HttpRequest
 
 
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 class PathInput:
     """Extracts the request path (without query string)."""
 
-    def get(self, ctx: HttpRequest, /) -> MatchingValue:
+    def get(self, ctx: HttpRequest, /) -> MatchingData:
         return ctx.path
 
 
@@ -26,7 +26,7 @@ class PathInput:
 class MethodInput:
     """Extracts the HTTP method (case-sensitive)."""
 
-    def get(self, ctx: HttpRequest, /) -> MatchingValue:
+    def get(self, ctx: HttpRequest, /) -> MatchingData:
         return ctx.method
 
 
@@ -36,7 +36,7 @@ class HeaderInput:
 
     name: str
 
-    def get(self, ctx: HttpRequest, /) -> MatchingValue:
+    def get(self, ctx: HttpRequest, /) -> MatchingData:
         return ctx.header(self.name)
 
 
@@ -46,5 +46,5 @@ class QueryParamInput:
 
     name: str
 
-    def get(self, ctx: HttpRequest, /) -> MatchingValue:
+    def get(self, ctx: HttpRequest, /) -> MatchingData:
         return ctx.query_param(self.name)

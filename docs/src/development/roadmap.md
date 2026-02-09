@@ -22,14 +22,15 @@ Both pass the same conformance test suite (`spec/tests/`). TypeScript (bumi) is 
 | 2.5 | Extensible MatchingData (`Custom` variant) | ✅ Done |
 | 3 | StringMatcher, MatcherTree, RadixTree | ✅ Done |
 | 4 | HTTP Domain (ext_proc model) | ✅ Done |
-| 5 | p.uma (Pure Python + HTTP) | ✅ Done |
-| 5.1 | p.uma arch-guild hardening | ✅ Done |
-| 6 | b.uma (Bun/TypeScript + HTTP) | 🚧 Next |
+| 5 | puma (Pure Python + HTTP) | ✅ Done |
+| 5.1 | puma arch-guild hardening | ✅ Done |
+| 6 | bumi (Bun/TypeScript + HTTP) | ✅ Done |
+| 6.1 | bumi arch-guild hardening | ✅ Done |
 | 7 | rumi/crusts/python (uniffi→puma-crusty) | Planned |
 | 8 | rumi/crusts/wasm (wasm-pack→@x.uma/bumi-crusty) | Planned |
 | 9 | Benchmarks (all variants) | Planned |
 
-## Phase 5: p.uma (Pure Python)
+## Phase 5: puma (Pure Python)
 
 **Status:** Complete (v0.1.0)
 
@@ -47,7 +48,7 @@ Pure Python implementation of the xDS Unified Matcher API. Zero dependencies. Py
 |-------------|---------------|-------|
 | `trait DataInput<Ctx>` | `Protocol[Ctx]` | Contravariant in `Ctx` |
 | `trait InputMatcher` | `Protocol` | Non-generic, runtime-checkable |
-| `enum MatchingData` | `type MatchingValue = str \| int \| bool \| bytes \| None` | Union replaces enum |
+| `enum MatchingData` | `MatchingData = str \| int \| bool \| bytes \| None` | Type alias replaces enum |
 | `enum Predicate<Ctx>` | `type Predicate[Ctx] = Single \| And \| Or \| Not` | Pattern-matchable |
 | `enum OnMatch<Ctx, A>` | `type OnMatch[Ctx, A] = Action \| NestedMatcher` | xDS exclusivity |
 
@@ -80,7 +81,7 @@ Pure Python implementation of the xDS Unified Matcher API. Zero dependencies. Py
 
 **Verdict:** Architecture excellent (zero boundary violations, hexagonal textbook). Safety gap closed via strategic documentation + puma-crusty path for adversarial use cases.
 
-## Phase 6: b.uma (Bun/TypeScript)
+## Phase 6: bumi (Bun/TypeScript)
 
 **Status:** Next
 
@@ -99,7 +100,7 @@ Pure TypeScript implementation using Bun runtime.
 |-------------|-------------------|-------|
 | `trait DataInput<Ctx>` | `interface DataInput<Ctx>` | Generic interface |
 | `trait InputMatcher` | `interface InputMatcher` | Non-generic |
-| `enum MatchingData` | `type MatchingValue = string \| number \| boolean \| Uint8Array \| null` | Union type |
+| `enum MatchingData` | `type MatchingData = string \| number \| boolean \| Uint8Array \| null` | Union type |
 | `enum Predicate<Ctx>` | `type Predicate<Ctx> = Single<Ctx> \| And<Ctx> \| Or<Ctx> \| Not<Ctx>` | Discriminated union |
 | `enum OnMatch<Ctx, A>` | `type OnMatch<Ctx, A> = Action<A> \| NestedMatcher<Ctx, A>` | Discriminated union |
 

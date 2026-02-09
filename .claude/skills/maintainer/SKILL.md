@@ -22,7 +22,7 @@ The goal: sustainable excellence — no rewrites needed. Growth happens at edges
 | Package | Language | Role |
 |---------|----------|------|
 | **rumi** | Rust | Core engine (the reference implementation) |
-| **p.uma** | Python | PyO3/maturin bindings |
+| **puma** | Python | PyO3/maturin bindings |
 | **j.uma** | TypeScript | WASM bindings via wasm-pack |
 
 ```
@@ -36,7 +36,7 @@ x.uma/
 │       └── claude/v1/
 ├── spec/tests/                 # conformance fixtures (YAML)
 ├── rumi/                      # Rust workspace member
-├── p.uma/                      # Python package (uv + maturin)
+├── puma/                      # Python package (uv + maturin)
 ├── j.uma/                      # TypeScript/WASM
 └── justfile                    # task orchestration
 ```
@@ -76,7 +76,7 @@ Type URLs: `type.googleapis.com/xuma.http.v1.HeaderInput`
 | Matcher evaluation logic | `rumi/core/src/` | Core, domain-agnostic |
 | New input/action type | `proto/xuma/<domain>/v1/` | Extension, domain-specific |
 | DataInput impl | `rumi/ext/<domain>.rs` | Adapter behind port |
-| Python-specific wrapper | `p.uma/python/` | Binding ergonomics |
+| Python-specific wrapper | `puma/python/` | Binding ergonomics |
 | Conformance test case | `spec/tests/<matcher-type>/` | Source of truth |
 
 **The filter:** Does it know about a specific domain (HTTP, Claude, etc.)? → Adapter (rumi/ext), not core.
@@ -114,7 +114,7 @@ Methods follow Envoy's naming (`get()`, `matches()`, `evaluate()`).
 ### Build Order
 
 ```
-rumi (no deps) → p.uma (depends on rumi) → j.uma (depends on rumi)
+rumi (no deps) → puma (depends on rumi) → j.uma (depends on rumi)
 ```
 
 ### Development Workflow
@@ -127,7 +127,7 @@ just build-rust              # or: cargo build -p r-umi
 just gen                     # regenerate all bindings
 
 # Python development
-cd p.uma && maturin develop --uv   # build + install in venv
+cd puma && maturin develop --uv   # build + install in venv
 uv run pytest                       # test
 
 # Run all conformance tests

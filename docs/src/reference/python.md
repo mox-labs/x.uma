@@ -2,7 +2,7 @@
 
 puma implements the xDS Unified Matcher API in pure Python. Zero dependencies. Python 3.12+.
 
-**Package:** `puma` (from `p.uma/` directory)
+**Package:** `puma` (from `puma/` directory)
 
 **Installation:**
 ```bash
@@ -18,7 +18,7 @@ All public types exported flat from top level:
 ```python
 from puma import (
     # Protocols
-    DataInput, InputMatcher, MatchingValue,
+    DataInput, InputMatcher, MatchingData,
     # Predicates
     SinglePredicate, And, Or, Not, Predicate, predicate_depth,
     # Matcher
@@ -64,12 +64,12 @@ from puma.http import (
 
 ┌─────────────────────────────────────┐
 │    DataInput[Ctx] protocol          │
-│   extract MatchingValue from Ctx    │
+│   extract MatchingData from Ctx    │
 └─────────────────────────────────────┘
 
 ┌─────────────────────────────────────┐
 │    InputMatcher protocol            │
-│   match MatchingValue → bool        │
+│   match MatchingData → bool        │
 └───┬─────────────────────────────────┘
     ├─ ExactMatcher
     ├─ PrefixMatcher
@@ -80,10 +80,10 @@ from puma.http import (
 
 ## Core Protocols
 
-### MatchingValue
+### MatchingData
 
 ```python
-type MatchingValue = str | int | bool | bytes | None
+type MatchingData = str | int | bool | bytes | None
 ```
 
 Type-erased value returned by `DataInput.get()`. Replaces Rust's `MatchingData` enum.
@@ -94,7 +94,7 @@ Returning `None` triggers the **None → false invariant**: predicate evaluates 
 
 ```python
 class DataInput(Protocol[Ctx]):
-    def get(self, ctx: Ctx, /) -> MatchingValue: ...
+    def get(self, ctx: Ctx, /) -> MatchingData: ...
 ```
 
 Domain-specific extraction port. Implementations:
@@ -108,7 +108,7 @@ Domain-specific extraction port. Implementations:
 
 ```python
 class InputMatcher(Protocol):
-    def matches(self, value: MatchingValue, /) -> bool: ...
+    def matches(self, value: MatchingData, /) -> bool: ...
 ```
 
 Domain-agnostic matching port. Non-generic by design — same `ExactMatcher` works for HTTP, CloudEvent, or any custom domain.
@@ -271,7 +271,7 @@ class ExactMatcher:
     value: str
     ignore_case: bool = False
 
-    def matches(self, value: MatchingValue, /) -> bool: ...
+    def matches(self, value: MatchingData, /) -> bool: ...
 ```
 
 Exact string equality. When `ignore_case=True`, comparison uses `.casefold()`.
@@ -286,7 +286,7 @@ class PrefixMatcher:
     prefix: str
     ignore_case: bool = False
 
-    def matches(self, value: MatchingValue, /) -> bool: ...
+    def matches(self, value: MatchingData, /) -> bool: ...
 ```
 
 String starts with prefix. Pre-lowercased at construction when `ignore_case=True`.
@@ -299,7 +299,7 @@ class SuffixMatcher:
     suffix: str
     ignore_case: bool = False
 
-    def matches(self, value: MatchingValue, /) -> bool: ...
+    def matches(self, value: MatchingData, /) -> bool: ...
 ```
 
 String ends with suffix. Pre-lowercased at construction when `ignore_case=True`.
@@ -312,7 +312,7 @@ class ContainsMatcher:
     substring: str
     ignore_case: bool = False
 
-    def matches(self, value: MatchingValue, /) -> bool: ...
+    def matches(self, value: MatchingData, /) -> bool: ...
 ```
 
 Substring search. Pre-lowercased at construction when `ignore_case=True` (Knuth optimization: avoid repeated pattern lowercasing).
@@ -324,7 +324,7 @@ Substring search. Pre-lowercased at construction when `ignore_case=True` (Knuth 
 class RegexMatcher:
     pattern: str
 
-    def matches(self, value: MatchingValue, /) -> bool: ...
+    def matches(self, value: MatchingData, /) -> bool: ...
 ```
 
 Regular expression search (not fullmatch). Pattern compiled at construction time.
@@ -369,7 +369,7 @@ HTTP request context for matching.
 ```python
 @dataclass(frozen=True, slots=True)
 class PathInput:
-    def get(self, ctx: HttpRequest, /) -> MatchingValue: ...
+    def get(self, ctx: HttpRequest, /) -> MatchingData: ...
 ```
 
 Extracts `ctx.path` (without query string).
@@ -379,7 +379,7 @@ Extracts `ctx.path` (without query string).
 ```python
 @dataclass(frozen=True, slots=True)
 class MethodInput:
-    def get(self, ctx: HttpRequest, /) -> MatchingValue: ...
+    def get(self, ctx: HttpRequest, /) -> MatchingData: ...
 ```
 
 Extracts HTTP method (case-sensitive).
@@ -391,7 +391,7 @@ Extracts HTTP method (case-sensitive).
 class HeaderInput:
     name: str
 
-    def get(self, ctx: HttpRequest, /) -> MatchingValue: ...
+    def get(self, ctx: HttpRequest, /) -> MatchingData: ...
 ```
 
 Extracts header value by name (case-insensitive lookup). Returns `None` if header not present.
@@ -403,7 +403,7 @@ Extracts header value by name (case-insensitive lookup). Returns `None` if heade
 class QueryParamInput:
     name: str
 
-    def get(self, ctx: HttpRequest, /) -> MatchingValue: ...
+    def get(self, ctx: HttpRequest, /) -> MatchingData: ...
 ```
 
 Extracts query parameter value by name. Returns `None` if parameter not present.

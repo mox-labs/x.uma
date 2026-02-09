@@ -110,8 +110,8 @@ Under the hood, `compile_route_matches` builds the same `Matcher` tree you saw i
 | Type | Purpose |
 |------|---------|
 | `DataInput[Ctx]` | Protocol — extract a value from context `Ctx` |
-| `InputMatcher` | Protocol — match a `MatchingValue` (str, int, bool, bytes, None) |
-| `MatchingValue` | Type alias — the erased data type returned by inputs |
+| `InputMatcher` | Protocol — match a `MatchingData` (str, int, bool, bytes, None) |
+| `MatchingData` | Type alias — the erased data type returned by inputs |
 | `SinglePredicate[Ctx]` | Combines a `DataInput` with an `InputMatcher` |
 | `Matcher[Ctx, A]` | Top-level matcher tree — evaluates to action `A` or `None` |
 | `FieldMatcher[Ctx, A]` | Pairs a predicate with an outcome (action or nested matcher) |
@@ -157,7 +157,7 @@ puma uses hexagonal architecture. To add a new domain, implement the `DataInput`
 
 ```python
 from dataclasses import dataclass
-from puma import DataInput, MatchingValue, Matcher, FieldMatcher, SinglePredicate, ExactMatcher, Action
+from puma import DataInput, MatchingData, Matcher, FieldMatcher, SinglePredicate, ExactMatcher, Action
 
 # Your custom context
 @dataclass
@@ -169,13 +169,13 @@ class CloudEvent:
 # DataInput for event type
 @dataclass(frozen=True, slots=True)
 class EventTypeInput:
-    def get(self, ctx: CloudEvent, /) -> MatchingValue:
+    def get(self, ctx: CloudEvent, /) -> MatchingData:
         return ctx.type
 
 # DataInput for event subject
 @dataclass(frozen=True, slots=True)
 class EventSubjectInput:
-    def get(self, ctx: CloudEvent, /) -> MatchingValue:
+    def get(self, ctx: CloudEvent, /) -> MatchingData:
         return ctx.subject  # None if not present
 
 # Build a matcher
@@ -211,7 +211,7 @@ puma follows hexagonal architecture (ports & adapters). The core is domain-agnos
                 │
 ┌───────────────▼─────────────────┐
 │           PORTS                 │
-│  DataInput[Ctx] → MatchingValue │
+│  DataInput[Ctx] → MatchingData │
 │  InputMatcher → bool            │
 └───────────────┬─────────────────┘
                 │

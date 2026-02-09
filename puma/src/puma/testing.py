@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from puma._types import MatchingValue
+    from puma._types import MatchingData
 
 
 @dataclass(frozen=True, slots=True)
@@ -32,5 +32,5 @@ class DictInput:
 
     key: str
 
-    def get(self, ctx: dict[str, str], /) -> MatchingValue:
+    def get(self, ctx: dict[str, str], /) -> MatchingData:
         return ctx.get(self.key)

@@ -17,7 +17,7 @@ plugins:
 
   # Python (betterproto)
   - remote: buf.build/community/danielgtaylor-betterproto
-    out: p.uma/python/xuma/gen
+    out: puma/python/xuma/gen
 
   # TypeScript (ts-proto)
   - remote: buf.build/community/stephenh-ts-proto

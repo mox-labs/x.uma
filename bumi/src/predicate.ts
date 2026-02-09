@@ -1,4 +1,4 @@
-import type { DataInput, InputMatcher, MatchingValue } from "./types.ts";
+import type { DataInput, InputMatcher, MatchingData } from "./types.ts";
 
 /** Pairs a domain-specific input with a domain-agnostic matcher. */
 export class SinglePredicate<Ctx> {
@@ -8,7 +8,7 @@ export class SinglePredicate<Ctx> {
 	) {}
 
 	evaluate(ctx: Ctx): boolean {
-		const value: MatchingValue = this.input.get(ctx);
+		const value: MatchingData = this.input.get(ctx);
 		if (value === null) return false; // INV: null → false
 		return this.matcher.matches(value);
 	}

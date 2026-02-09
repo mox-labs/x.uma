@@ -93,7 +93,7 @@ check-no-std:
 
 # Run puma tests
 puma-test:
-    cd p.uma && uv run pytest
+    cd puma && uv run pytest
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TypeScript (bumi)

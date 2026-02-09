@@ -30,13 +30,13 @@ from puma._string_matchers import (
     RegexMatcher,
     SuffixMatcher,
 )
-from puma._types import DataInput, InputMatcher, MatchingValue
+from puma._types import DataInput, InputMatcher, MatchingData
 
 __all__ = [
     # Protocols
     "DataInput",
     "InputMatcher",
-    "MatchingValue",
+    "MatchingData",
     # Predicates
     "SinglePredicate",
     "And",

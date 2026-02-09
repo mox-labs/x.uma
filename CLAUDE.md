@@ -1,16 +1,16 @@
-# x.uma — Cross-Platform Unified Matcher API
+# x.uma — Cross-Platform Matcher Engine
 
 ## What is x.uma?
 
-A matcher ecosystem implementing the xDS Unified Matcher API across multiple languages and domains.
+A matcher engine implementing the xDS Unified Matcher API across multiple languages and domains.
 
 | Package | Language | Notes |
 |---------|----------|-------|
 | **rumi** | Rust | Core engine (reference implementation) |
-| **puma** | Python | Pure Python implementation (dir: `p.uma/`) |
+| **puma** | Python | Pure Python implementation (dir: `puma/`) |
 | **bumi** | Bun/TypeScript | Pure TypeScript implementation (dir: `bumi/`) |
-| **crusty-puma** | Python | Rust bindings via uniffi (from `rumi/crusts/python/`) |
-| **crusty-bumi** | TypeScript | Rust bindings via WASM (from `rumi/crusts/wasm/`) |
+| **puma-crusty** | Python | Rust bindings via uniffi (from `rumi/crusts/python/`) |
+| **bumi-crusty** | TypeScript | Rust bindings via WASM (from `rumi/crusts/wasm/`) |
 
 All implementations pass the same conformance test suite (`spec/tests/`).
 
@@ -91,7 +91,7 @@ x.uma/
 ├── spec/
 │   └── tests/                  # conformance test fixtures (YAML)
 ├── rumi/                       # Rust workspace (core + extensions + crusts)
-├── p.uma/                      # Pure Python implementation (package: puma)
+├── puma/                       # Pure Python implementation (package: puma)
 ├── bumi/                       # Pure Bun/TypeScript implementation (package: bumi)
 ├── docs/                       # mdBook documentation
 └── justfile                    # polyglot task orchestration
@@ -107,12 +107,13 @@ x.uma/
 | 2.5 | Extensible MatchingData (`Custom` variant) | ✅ Done |
 | 3 | StringMatcher, MatcherTree, RadixTree | ✅ Done |
 | 4 | HTTP Domain (ext_proc model) | ✅ Done |
-| 5 | p.uma (Pure Python + HTTP) | ✅ Done |
-| 5.1 | p.uma arch-guild hardening | ✅ Done |
+| 5 | puma (Pure Python + HTTP) | ✅ Done |
+| 5.1 | puma arch-guild hardening | ✅ Done |
 | 6 | bumi (Bun/TypeScript + HTTP) | ✅ Done |
-| 7 | rumi/crusts/python (uniffi→crusty-puma) | Planned |
-| 8 | rumi/crusts/wasm (wasm-pack→crusty-bumi) | Planned |
-| 9 | Benchmarks (all variants) | Planned |
+| 6.1 | bumi arch-guild hardening | ✅ Done |
+| 7 | rumi/crusts/python (uniffi → puma-crusty) | Planned |
+| 8 | rumi/crusts/wasm (wasm-pack → bumi-crusty) | Planned |
+| 9 | Benchmarks (all 5 variants) | Planned |
 
 ## Tooling
 
@@ -191,6 +192,52 @@ From 13-agent architecture review:
 | **DataInput None → false** | Dijkstra | `None` from `DataInput::get()` → predicate evaluates to `false`. |
 | **No unsafe impl** | Wolf | Let compiler derive Send/Sync — don't add restrictive bounds. |
 
+## Arch-Guild Decision: Matcher Engine, Not Policy Engine
+
+From 8-agent deliberation (2026-02-08). **Verdict: DO NOT expand scope.**
+
+The generic `A` in `Matcher<Ctx, A>` is the fence — core does not know about allow/deny.
+Policy lives ABOVE the matcher (Istio pattern), not inside it.
+
+| Rule | Rationale |
+|------|-----------|
+| **No "Policy" type in core** | The `A` parameter is the composition seam. Core doesn't interpret actions. |
+| **Use "matcher engine" in docs** | Not "policy engine". Align vocabulary with what the code actually does. |
+| **`NamedMatcher` over `Policy`** | If naming metadata is ever needed, use truthful names (Karman). |
+| **Domain compilers own the vocabulary** | rumi-http has `HttpRouteMatch`, rumi-claude has `HookMatch`. |
+| **Cross-domain = pipeline** | Different `Ctx` types are incomparable. Combine actions, not contexts. |
+
+**Strategic path:** Build domain compilers now. Extract policy abstraction only when a second integration reveals cross-domain pain. See `scratch/arch-guild-reports/policy-deliberation/00-index.md`.
+
+## Domain Compiler Pattern
+
+Each domain adapter provides a **compiler** that transforms user-friendly config into matcher trees:
+
+| Domain | Config Type | Compiler | Output |
+|--------|------------|----------|--------|
+| HTTP | `HttpRouteMatch` | `compile_route_matches()` | `Matcher<HttpMessage, A>` |
+| Claude | `HookMatch` | `compile_hook_matches()` | `Matcher<HookContext, A>` |
+
+The compiler is the "door handle" — it makes the matcher engine usable without manual tree construction.
+
+### Claude Domain Compiler (rumi-claude)
+
+Types to build (parallel to rumi-http's gateway):
+- `HookMatch` — match conditions for Claude Code hook events
+- `HookMatchExt` — extension trait for compile convenience
+- `compile_hook_matches()` — transforms `HookMatch` configs into `Matcher<HookContext, A>`
+- `evaluate_with_trace()` — returns the decision AND the path through the matcher tree
+
+### Cross-Language Type Mapping
+
+| Concept | Rust (rumi) | Python (puma) | TypeScript (bumi) |
+|---------|-------------|---------------|-------------------|
+| Erased data | `MatchingData` | `MatchingData` | `MatchingData` |
+| Context type | `Ctx` (generic) | `Ctx` (TypeVar) | `Ctx` (generic) |
+| Action type | `A` (generic) | `A` (TypeVar) | `A` (generic) |
+
+`MatchingData` is the same name across all three implementations. In Rust it's an enum, in Python a type alias (`str | int | bool | bytes | None`), in TypeScript a type alias (`string | number | boolean | Uint8Array | null`). One concept, one name.
+
 ## rumi Crate Structure
 
 Workspace with core + extension crates:
@@ -208,8 +255,8 @@ rumi/
 │   ├── http/           # rumi-http (HTTP matching)
 │   └── claude/         # rumi-claude (Claude Code hooks)
 └── crusts/             # Language bindings (🦀 crustacean → crusty)
-    ├── python/         # uniffi → crusty-puma wheel (maturin)
-    └── wasm/           # wasm-bindgen → crusty-bumi (wasm-pack)
+    ├── python/         # uniffi → puma-crusty wheel (maturin)
+    └── wasm/           # wasm-bindgen → bumi-crusty (wasm-pack)
 ```
 
 **Extension pattern:** Users depend on an extension crate, get core transitively:
