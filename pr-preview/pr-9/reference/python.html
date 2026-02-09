@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "rust";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-a2ea8057.js";
+            window.path_to_searchindex_js = "../searchindex-6b1472f2.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-9ddb2f6c.js"></script>
@@ -182,7 +182,7 @@
                     <main>
                         <h1 id="python-api-reference"><a class="header" href="#python-api-reference">Python API Reference</a></h1>
 <p>puma implements the xDS Unified Matcher API in pure Python. Zero dependencies. Python 3.12+.</p>
-<p><strong>Package:</strong> <code>puma</code> (from <code>p.uma/</code> directory)</p>
+<p><strong>Package:</strong> <code>puma</code> (from <code>puma/</code> directory)</p>
 <p><strong>Installation:</strong></p>
 <pre><code class="language-bash">pip install puma
 # or with uv
@@ -192,7 +192,7 @@ uv add puma
 <p>All public types exported flat from top level:</p>
 <pre><code class="language-python">from puma import (
     # Protocols
-    DataInput, InputMatcher, MatchingValue,
+    DataInput, InputMatcher, MatchingData,
     # Predicates
     SinglePredicate, And, Or, Not, Predicate, predicate_depth,
     # Matcher
@@ -235,12 +235,12 @@ from puma.http import (
 
 ┌─────────────────────────────────────┐
 │    DataInput[Ctx] protocol          │
-│   extract MatchingValue from Ctx    │
+│   extract MatchingData from Ctx    │
 └─────────────────────────────────────┘
 
 ┌─────────────────────────────────────┐
 │    InputMatcher protocol            │
-│   match MatchingValue → bool        │
+│   match MatchingData → bool        │
 └───┬─────────────────────────────────┘
     ├─ ExactMatcher
     ├─ PrefixMatcher
@@ -249,14 +249,14 @@ from puma.http import (
     └─ RegexMatcher
 </code></pre>
 <h2 id="core-protocols"><a class="header" href="#core-protocols">Core Protocols</a></h2>
-<h3 id="matchingvalue"><a class="header" href="#matchingvalue">MatchingValue</a></h3>
-<pre><code class="language-python">type MatchingValue = str | int | bool | bytes | None
+<h3 id="matchingdata"><a class="header" href="#matchingdata">MatchingData</a></h3>
+<pre><code class="language-python">type MatchingData = str | int | bool | bytes | None
 </code></pre>
 <p>Type-erased value returned by <code>DataInput.get()</code>. Replaces Rust’s <code>MatchingData</code> enum.</p>
 <p>Returning <code>None</code> triggers the <strong>None → false invariant</strong>: predicate evaluates to <code>False</code> without consulting the matcher.</p>
 <h3 id="datainputctx"><a class="header" href="#datainputctx">DataInput[Ctx]</a></h3>
 <pre><code class="language-python">class DataInput(Protocol[Ctx]):
-    def get(self, ctx: Ctx, /) -&gt; MatchingValue: ...
+    def get(self, ctx: Ctx, /) -&gt; MatchingData: ...
 </code></pre>
 <p>Domain-specific extraction port. Implementations:</p>
 <ul>
@@ -267,7 +267,7 @@ from puma.http import (
 <p><strong>Contravariant in Ctx</strong> — accepts <code>Ctx</code> or any supertype.</p>
 <h3 id="inputmatcher"><a class="header" href="#inputmatcher">InputMatcher</a></h3>
 <pre><code class="language-python">class InputMatcher(Protocol):
-    def matches(self, value: MatchingValue, /) -&gt; bool: ...
+    def matches(self, value: MatchingData, /) -&gt; bool: ...
 </code></pre>
 <p>Domain-agnostic matching port. Non-generic by design — same <code>ExactMatcher</code> works for HTTP, CloudEvent, or any custom domain.</p>
 <h2 id="predicates"><a class="header" href="#predicates">Predicates</a></h2>
@@ -370,7 +370,7 @@ class ExactMatcher:
     value: str
     ignore_case: bool = False
 
-    def matches(self, value: MatchingValue, /) -&gt; bool: ...
+    def matches(self, value: MatchingData, /) -&gt; bool: ...
 </code></pre>
 <p>Exact string equality. When <code>ignore_case=True</code>, comparison uses <code>.casefold()</code>.</p>
 <p><strong>Optimization:</strong> Pattern is pre-lowercased at construction time (<code>_cmp_value</code> field).</p>
@@ -380,7 +380,7 @@ class PrefixMatcher:
     prefix: str
     ignore_case: bool = False
 
-    def matches(self, value: MatchingValue, /) -&gt; bool: ...
+    def matches(self, value: MatchingData, /) -&gt; bool: ...
 </code></pre>
 <p>String starts with prefix. Pre-lowercased at construction when <code>ignore_case=True</code>.</p>
 <h3 id="suffixmatcher"><a class="header" href="#suffixmatcher">SuffixMatcher</a></h3>
@@ -389,7 +389,7 @@ class SuffixMatcher:
     suffix: str
     ignore_case: bool = False
 
-    def matches(self, value: MatchingValue, /) -&gt; bool: ...
+    def matches(self, value: MatchingData, /) -&gt; bool: ...
 </code></pre>
 <p>String ends with suffix. Pre-lowercased at construction when <code>ignore_case=True</code>.</p>
 <h3 id="containsmatcher"><a class="header" href="#containsmatcher">ContainsMatcher</a></h3>
@@ -398,7 +398,7 @@ class ContainsMatcher:
     substring: str
     ignore_case: bool = False
 
-    def matches(self, value: MatchingValue, /) -&gt; bool: ...
+    def matches(self, value: MatchingData, /) -&gt; bool: ...
 </code></pre>
 <p>Substring search. Pre-lowercased at construction when <code>ignore_case=True</code> (Knuth optimization: avoid repeated pattern lowercasing).</p>
 <h3 id="regexmatcher"><a class="header" href="#regexmatcher">RegexMatcher</a></h3>
@@ -406,7 +406,7 @@ class ContainsMatcher:
 class RegexMatcher:
     pattern: str
 
-    def matches(self, value: MatchingValue, /) -&gt; bool: ...
+    def matches(self, value: MatchingData, /) -&gt; bool: ...
 </code></pre>
 <p>Regular expression search (not fullmatch). Pattern compiled at construction time.</p>
 <p><strong>Security:</strong> Uses Python <code>re</code> module (backtracking NFA, ReDoS-vulnerable). See <code>SECURITY.md</code> in the puma package for details. For adversarial input, use <code>puma-crusty</code> (Phase 7).</p>
@@ -441,13 +441,13 @@ class HttpRequest:
 <h4 id="pathinput"><a class="header" href="#pathinput">PathInput</a></h4>
 <pre><code class="language-python">@dataclass(frozen=True, slots=True)
 class PathInput:
-    def get(self, ctx: HttpRequest, /) -&gt; MatchingValue: ...
+    def get(self, ctx: HttpRequest, /) -&gt; MatchingData: ...
 </code></pre>
 <p>Extracts <code>ctx.path</code> (without query string).</p>
 <h4 id="methodinput"><a class="header" href="#methodinput">MethodInput</a></h4>
 <pre><code class="language-python">@dataclass(frozen=True, slots=True)
 class MethodInput:
-    def get(self, ctx: HttpRequest, /) -&gt; MatchingValue: ...
+    def get(self, ctx: HttpRequest, /) -&gt; MatchingData: ...
 </code></pre>
 <p>Extracts HTTP method (case-sensitive).</p>
 <h4 id="headerinput"><a class="header" href="#headerinput">HeaderInput</a></h4>
@@ -455,7 +455,7 @@ class MethodInput:
 class HeaderInput:
     name: str
 
-    def get(self, ctx: HttpRequest, /) -&gt; MatchingValue: ...
+    def get(self, ctx: HttpRequest, /) -&gt; MatchingData: ...
 </code></pre>
 <p>Extracts header value by name (case-insensitive lookup). Returns <code>None</code> if header not present.</p>
 <h4 id="queryparaminput"><a class="header" href="#queryparaminput">QueryParamInput</a></h4>
@@ -463,7 +463,7 @@ class HeaderInput:
 class QueryParamInput:
     name: str
 
-    def get(self, ctx: HttpRequest, /) -&gt; MatchingValue: ...
+    def get(self, ctx: HttpRequest, /) -&gt; MatchingData: ...
 </code></pre>
 <p>Extracts query parameter value by name. Returns <code>None</code> if parameter not present.</p>
 <h3 id="gateway-api-types"><a class="header" href="#gateway-api-types">Gateway API Types</a></h3>

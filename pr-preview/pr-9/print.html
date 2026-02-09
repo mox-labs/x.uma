@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "searchindex-a2ea8057.js";
+            window.path_to_searchindex_js = "searchindex-6b1472f2.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-9ddb2f6c.js"></script>
@@ -1268,7 +1268,7 @@ cases:
 <p><strong>Test runners:</strong></p>
 <ul>
 <li>Rust: <code>cargo test</code> (rumi-test crate)</li>
-<li>Python: <code>pytest</code> (p.uma/tests/)</li>
+<li>Python: <code>pytest</code> (puma/tests/)</li>
 <li>TypeScript: <code>bun test</code> (b.uma/tests/, planned)</li>
 </ul>
 <p>Each language’s test runner parses the same YAML fixtures, constructs matchers in its type system, and asserts the same expected outcomes.</p>
@@ -1283,7 +1283,7 @@ cases:
 </code></pre>
 <p>Dependencies point inward. Core knows nothing about domains.</p>
 <h3 id="python-puma-1"><a class="header" href="#python-puma-1">Python (puma)</a></h3>
-<pre><code class="language-text">p.uma/
+<pre><code class="language-text">puma/
 └── src/puma/
     ├── __init__.py     # Core types (flat exports)
     ├── _types.py       # Protocols
@@ -1701,7 +1701,7 @@ type.googleapis.com/xuma.claude.v1.HookContext
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="python-api-reference"><a class="header" href="#python-api-reference">Python API Reference</a></h1>
 <p>puma implements the xDS Unified Matcher API in pure Python. Zero dependencies. Python 3.12+.</p>
-<p><strong>Package:</strong> <code>puma</code> (from <code>p.uma/</code> directory)</p>
+<p><strong>Package:</strong> <code>puma</code> (from <code>puma/</code> directory)</p>
 <p><strong>Installation:</strong></p>
 <pre><code class="language-bash">pip install puma
 # or with uv
@@ -1711,7 +1711,7 @@ uv add puma
 <p>All public types exported flat from top level:</p>
 <pre><code class="language-python">from puma import (
     # Protocols
-    DataInput, InputMatcher, MatchingValue,
+    DataInput, InputMatcher, MatchingData,
     # Predicates
     SinglePredicate, And, Or, Not, Predicate, predicate_depth,
     # Matcher
@@ -1754,12 +1754,12 @@ from puma.http import (
 
 ┌─────────────────────────────────────┐
 │    DataInput[Ctx] protocol          │
-│   extract MatchingValue from Ctx    │
+│   extract MatchingData from Ctx    │
 └─────────────────────────────────────┘
 
 ┌─────────────────────────────────────┐
 │    InputMatcher protocol            │
-│   match MatchingValue → bool        │
+│   match MatchingData → bool        │
 └───┬─────────────────────────────────┘
     ├─ ExactMatcher
     ├─ PrefixMatcher
@@ -1768,14 +1768,14 @@ from puma.http import (
     └─ RegexMatcher
 </code></pre>
 <h2 id="core-protocols"><a class="header" href="#core-protocols">Core Protocols</a></h2>
-<h3 id="matchingvalue"><a class="header" href="#matchingvalue">MatchingValue</a></h3>
-<pre><code class="language-python">type MatchingValue = str | int | bool | bytes | None
+<h3 id="matchingdata"><a class="header" href="#matchingdata">MatchingData</a></h3>
+<pre><code class="language-python">type MatchingData = str | int | bool | bytes | None
 </code></pre>
 <p>Type-erased value returned by <code>DataInput.get()</code>. Replaces Rust’s <code>MatchingData</code> enum.</p>
 <p>Returning <code>None</code> triggers the <strong>None → false invariant</strong>: predicate evaluates to <code>False</code> without consulting the matcher.</p>
 <h3 id="datainputctx"><a class="header" href="#datainputctx">DataInput[Ctx]</a></h3>
 <pre><code class="language-python">class DataInput(Protocol[Ctx]):
-    def get(self, ctx: Ctx, /) -&gt; MatchingValue: ...
+    def get(self, ctx: Ctx, /) -&gt; MatchingData: ...
 </code></pre>
 <p>Domain-specific extraction port. Implementations:</p>
 <ul>
@@ -1786,7 +1786,7 @@ from puma.http import (
 <p><strong>Contravariant in Ctx</strong> — accepts <code>Ctx</code> or any supertype.</p>
 <h3 id="inputmatcher"><a class="header" href="#inputmatcher">InputMatcher</a></h3>
 <pre><code class="language-python">class InputMatcher(Protocol):
-    def matches(self, value: MatchingValue, /) -&gt; bool: ...
+    def matches(self, value: MatchingData, /) -&gt; bool: ...
 </code></pre>
 <p>Domain-agnostic matching port. Non-generic by design — same <code>ExactMatcher</code> works for HTTP, CloudEvent, or any custom domain.</p>
 <h2 id="predicates"><a class="header" href="#predicates">Predicates</a></h2>
@@ -1889,7 +1889,7 @@ class ExactMatcher:
     value: str
     ignore_case: bool = False
 
-    def matches(self, value: MatchingValue, /) -&gt; bool: ...
+    def matches(self, value: MatchingData, /) -&gt; bool: ...
 </code></pre>
 <p>Exact string equality. When <code>ignore_case=True</code>, comparison uses <code>.casefold()</code>.</p>
 <p><strong>Optimization:</strong> Pattern is pre-lowercased at construction time (<code>_cmp_value</code> field).</p>
@@ -1899,7 +1899,7 @@ class PrefixMatcher:
     prefix: str
     ignore_case: bool = False
 
-    def matches(self, value: MatchingValue, /) -&gt; bool: ...
+    def matches(self, value: MatchingData, /) -&gt; bool: ...
 </code></pre>
 <p>String starts with prefix. Pre-lowercased at construction when <code>ignore_case=True</code>.</p>
 <h3 id="suffixmatcher"><a class="header" href="#suffixmatcher">SuffixMatcher</a></h3>
@@ -1908,7 +1908,7 @@ class SuffixMatcher:
     suffix: str
     ignore_case: bool = False
 
-    def matches(self, value: MatchingValue, /) -&gt; bool: ...
+    def matches(self, value: MatchingData, /) -&gt; bool: ...
 </code></pre>
 <p>String ends with suffix. Pre-lowercased at construction when <code>ignore_case=True</code>.</p>
 <h3 id="containsmatcher"><a class="header" href="#containsmatcher">ContainsMatcher</a></h3>
@@ -1917,7 +1917,7 @@ class ContainsMatcher:
     substring: str
     ignore_case: bool = False
 
-    def matches(self, value: MatchingValue, /) -&gt; bool: ...
+    def matches(self, value: MatchingData, /) -&gt; bool: ...
 </code></pre>
 <p>Substring search. Pre-lowercased at construction when <code>ignore_case=True</code> (Knuth optimization: avoid repeated pattern lowercasing).</p>
 <h3 id="regexmatcher"><a class="header" href="#regexmatcher">RegexMatcher</a></h3>
@@ -1925,7 +1925,7 @@ class ContainsMatcher:
 class RegexMatcher:
     pattern: str
 
-    def matches(self, value: MatchingValue, /) -&gt; bool: ...
+    def matches(self, value: MatchingData, /) -&gt; bool: ...
 </code></pre>
 <p>Regular expression search (not fullmatch). Pattern compiled at construction time.</p>
 <p><strong>Security:</strong> Uses Python <code>re</code> module (backtracking NFA, ReDoS-vulnerable). See <code>SECURITY.md</code> in the puma package for details. For adversarial input, use <code>puma-crusty</code> (Phase 7).</p>
@@ -1960,13 +1960,13 @@ class HttpRequest:
 <h4 id="pathinput"><a class="header" href="#pathinput">PathInput</a></h4>
 <pre><code class="language-python">@dataclass(frozen=True, slots=True)
 class PathInput:
-    def get(self, ctx: HttpRequest, /) -&gt; MatchingValue: ...
+    def get(self, ctx: HttpRequest, /) -&gt; MatchingData: ...
 </code></pre>
 <p>Extracts <code>ctx.path</code> (without query string).</p>
 <h4 id="methodinput"><a class="header" href="#methodinput">MethodInput</a></h4>
 <pre><code class="language-python">@dataclass(frozen=True, slots=True)
 class MethodInput:
-    def get(self, ctx: HttpRequest, /) -&gt; MatchingValue: ...
+    def get(self, ctx: HttpRequest, /) -&gt; MatchingData: ...
 </code></pre>
 <p>Extracts HTTP method (case-sensitive).</p>
 <h4 id="headerinput"><a class="header" href="#headerinput">HeaderInput</a></h4>
@@ -1974,7 +1974,7 @@ class MethodInput:
 class HeaderInput:
     name: str
 
-    def get(self, ctx: HttpRequest, /) -&gt; MatchingValue: ...
+    def get(self, ctx: HttpRequest, /) -&gt; MatchingData: ...
 </code></pre>
 <p>Extracts header value by name (case-insensitive lookup). Returns <code>None</code> if header not present.</p>
 <h4 id="queryparaminput"><a class="header" href="#queryparaminput">QueryParamInput</a></h4>
@@ -1982,7 +1982,7 @@ class HeaderInput:
 class QueryParamInput:
     name: str
 
-    def get(self, ctx: HttpRequest, /) -&gt; MatchingValue: ...
+    def get(self, ctx: HttpRequest, /) -&gt; MatchingData: ...
 </code></pre>
 <p>Extracts query parameter value by name. Returns <code>None</code> if parameter not present.</p>
 <h3 id="gateway-api-types"><a class="header" href="#gateway-api-types">Gateway API Types</a></h3>
@@ -2259,16 +2259,17 @@ matcher = route.compile("api_backend")
 <tr><td>2.5</td><td>Extensible MatchingData (<code>Custom</code> variant)</td><td>✅ Done</td></tr>
 <tr><td>3</td><td>StringMatcher, MatcherTree, RadixTree</td><td>✅ Done</td></tr>
 <tr><td>4</td><td>HTTP Domain (ext_proc model)</td><td>✅ Done</td></tr>
-<tr><td>5</td><td>p.uma (Pure Python + HTTP)</td><td>✅ Done</td></tr>
-<tr><td>5.1</td><td>p.uma arch-guild hardening</td><td>✅ Done</td></tr>
-<tr><td>6</td><td>b.uma (Bun/TypeScript + HTTP)</td><td>🚧 Next</td></tr>
+<tr><td>5</td><td>puma (Pure Python + HTTP)</td><td>✅ Done</td></tr>
+<tr><td>5.1</td><td>puma arch-guild hardening</td><td>✅ Done</td></tr>
+<tr><td>6</td><td>bumi (Bun/TypeScript + HTTP)</td><td>✅ Done</td></tr>
+<tr><td>6.1</td><td>bumi arch-guild hardening</td><td>✅ Done</td></tr>
 <tr><td>7</td><td>rumi/crusts/python (uniffi→puma-crusty)</td><td>Planned</td></tr>
 <tr><td>8</td><td>rumi/crusts/wasm (wasm-pack→@x.uma/bumi-crusty)</td><td>Planned</td></tr>
 <tr><td>9</td><td>Benchmarks (all variants)</td><td>Planned</td></tr>
 </tbody>
 </table>
 </div>
-<h2 id="phase-5-puma-pure-python"><a class="header" href="#phase-5-puma-pure-python">Phase 5: p.uma (Pure Python)</a></h2>
+<h2 id="phase-5-puma-pure-python"><a class="header" href="#phase-5-puma-pure-python">Phase 5: puma (Pure Python)</a></h2>
 <p><strong>Status:</strong> Complete (v0.1.0)</p>
 <p>Pure Python implementation of the xDS Unified Matcher API. Zero dependencies. Python 3.12+.</p>
 <p><strong>Architecture:</strong></p>
@@ -2287,7 +2288,7 @@ matcher = route.compile("api_backend")
 <tbody>
 <tr><td><code>trait DataInput&lt;Ctx&gt;</code></td><td><code>Protocol[Ctx]</code></td><td>Contravariant in <code>Ctx</code></td></tr>
 <tr><td><code>trait InputMatcher</code></td><td><code>Protocol</code></td><td>Non-generic, runtime-checkable</td></tr>
-<tr><td><code>enum MatchingData</code></td><td><code>type MatchingValue = str | int | bool | bytes | None</code></td><td>Union replaces enum</td></tr>
+<tr><td><code>enum MatchingData</code></td><td><code>MatchingData = str | int | bool | bytes | None</code></td><td>Type alias replaces enum</td></tr>
 <tr><td><code>enum Predicate&lt;Ctx&gt;</code></td><td><code>type Predicate[Ctx] = Single | And | Or | Not</code></td><td>Pattern-matchable</td></tr>
 <tr><td><code>enum OnMatch&lt;Ctx, A&gt;</code></td><td><code>type OnMatch[Ctx, A] = Action | NestedMatcher</code></td><td>xDS exclusivity</td></tr>
 </tbody>
@@ -2321,7 +2322,7 @@ matcher = route.compile("api_backend")
 <li><strong>ReDoS documentation</strong> — SECURITY.md explains Python <code>re</code> vs Rust <code>regex</code> trade-off</li>
 </ol>
 <p><strong>Verdict:</strong> Architecture excellent (zero boundary violations, hexagonal textbook). Safety gap closed via strategic documentation + puma-crusty path for adversarial use cases.</p>
-<h2 id="phase-6-buma-buntypescript"><a class="header" href="#phase-6-buma-buntypescript">Phase 6: b.uma (Bun/TypeScript)</a></h2>
+<h2 id="phase-6-bumi-buntypescript"><a class="header" href="#phase-6-bumi-buntypescript">Phase 6: bumi (Bun/TypeScript)</a></h2>
 <p><strong>Status:</strong> Next</p>
 <p>Pure TypeScript implementation using Bun runtime.</p>
 <p><strong>Planned:</strong></p>
@@ -2341,7 +2342,7 @@ matcher = route.compile("api_backend")
 <tbody>
 <tr><td><code>trait DataInput&lt;Ctx&gt;</code></td><td><code>interface DataInput&lt;Ctx&gt;</code></td><td>Generic interface</td></tr>
 <tr><td><code>trait InputMatcher</code></td><td><code>interface InputMatcher</code></td><td>Non-generic</td></tr>
-<tr><td><code>enum MatchingData</code></td><td><code>type MatchingValue = string | number | boolean | Uint8Array | null</code></td><td>Union type</td></tr>
+<tr><td><code>enum MatchingData</code></td><td><code>type MatchingData = string | number | boolean | Uint8Array | null</code></td><td>Union type</td></tr>
 <tr><td><code>enum Predicate&lt;Ctx&gt;</code></td><td><code>type Predicate&lt;Ctx&gt; = Single&lt;Ctx&gt; | And&lt;Ctx&gt; | Or&lt;Ctx&gt; | Not&lt;Ctx&gt;</code></td><td>Discriminated union</td></tr>
 <tr><td><code>enum OnMatch&lt;Ctx, A&gt;</code></td><td><code>type OnMatch&lt;Ctx, A&gt; = Action&lt;A&gt; | NestedMatcher&lt;Ctx, A&gt;</code></td><td>Discriminated union</td></tr>
 </tbody>

@@ -35,7 +35,7 @@
             const path_to_root = "../";
             const default_light_theme = "rust";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-a2ea8057.js";
+            window.path_to_searchindex_js = "../searchindex-6b1472f2.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="../toc-9ddb2f6c.js"></script>
@@ -203,16 +203,17 @@
 <tr><td>2.5</td><td>Extensible MatchingData (<code>Custom</code> variant)</td><td>✅ Done</td></tr>
 <tr><td>3</td><td>StringMatcher, MatcherTree, RadixTree</td><td>✅ Done</td></tr>
 <tr><td>4</td><td>HTTP Domain (ext_proc model)</td><td>✅ Done</td></tr>
-<tr><td>5</td><td>p.uma (Pure Python + HTTP)</td><td>✅ Done</td></tr>
-<tr><td>5.1</td><td>p.uma arch-guild hardening</td><td>✅ Done</td></tr>
-<tr><td>6</td><td>b.uma (Bun/TypeScript + HTTP)</td><td>🚧 Next</td></tr>
+<tr><td>5</td><td>puma (Pure Python + HTTP)</td><td>✅ Done</td></tr>
+<tr><td>5.1</td><td>puma arch-guild hardening</td><td>✅ Done</td></tr>
+<tr><td>6</td><td>bumi (Bun/TypeScript + HTTP)</td><td>✅ Done</td></tr>
+<tr><td>6.1</td><td>bumi arch-guild hardening</td><td>✅ Done</td></tr>
 <tr><td>7</td><td>rumi/crusts/python (uniffi→puma-crusty)</td><td>Planned</td></tr>
 <tr><td>8</td><td>rumi/crusts/wasm (wasm-pack→@x.uma/bumi-crusty)</td><td>Planned</td></tr>
 <tr><td>9</td><td>Benchmarks (all variants)</td><td>Planned</td></tr>
 </tbody>
 </table>
 </div>
-<h2 id="phase-5-puma-pure-python"><a class="header" href="#phase-5-puma-pure-python">Phase 5: p.uma (Pure Python)</a></h2>
+<h2 id="phase-5-puma-pure-python"><a class="header" href="#phase-5-puma-pure-python">Phase 5: puma (Pure Python)</a></h2>
 <p><strong>Status:</strong> Complete (v0.1.0)</p>
 <p>Pure Python implementation of the xDS Unified Matcher API. Zero dependencies. Python 3.12+.</p>
 <p><strong>Architecture:</strong></p>
@@ -231,7 +232,7 @@
 <tbody>
 <tr><td><code>trait DataInput&lt;Ctx&gt;</code></td><td><code>Protocol[Ctx]</code></td><td>Contravariant in <code>Ctx</code></td></tr>
 <tr><td><code>trait InputMatcher</code></td><td><code>Protocol</code></td><td>Non-generic, runtime-checkable</td></tr>
-<tr><td><code>enum MatchingData</code></td><td><code>type MatchingValue = str | int | bool | bytes | None</code></td><td>Union replaces enum</td></tr>
+<tr><td><code>enum MatchingData</code></td><td><code>MatchingData = str | int | bool | bytes | None</code></td><td>Type alias replaces enum</td></tr>
 <tr><td><code>enum Predicate&lt;Ctx&gt;</code></td><td><code>type Predicate[Ctx] = Single | And | Or | Not</code></td><td>Pattern-matchable</td></tr>
 <tr><td><code>enum OnMatch&lt;Ctx, A&gt;</code></td><td><code>type OnMatch[Ctx, A] = Action | NestedMatcher</code></td><td>xDS exclusivity</td></tr>
 </tbody>
@@ -265,7 +266,7 @@
 <li><strong>ReDoS documentation</strong> — SECURITY.md explains Python <code>re</code> vs Rust <code>regex</code> trade-off</li>
 </ol>
 <p><strong>Verdict:</strong> Architecture excellent (zero boundary violations, hexagonal textbook). Safety gap closed via strategic documentation + puma-crusty path for adversarial use cases.</p>
-<h2 id="phase-6-buma-buntypescript"><a class="header" href="#phase-6-buma-buntypescript">Phase 6: b.uma (Bun/TypeScript)</a></h2>
+<h2 id="phase-6-bumi-buntypescript"><a class="header" href="#phase-6-bumi-buntypescript">Phase 6: bumi (Bun/TypeScript)</a></h2>
 <p><strong>Status:</strong> Next</p>
 <p>Pure TypeScript implementation using Bun runtime.</p>
 <p><strong>Planned:</strong></p>
@@ -285,7 +286,7 @@
 <tbody>
 <tr><td><code>trait DataInput&lt;Ctx&gt;</code></td><td><code>interface DataInput&lt;Ctx&gt;</code></td><td>Generic interface</td></tr>
 <tr><td><code>trait InputMatcher</code></td><td><code>interface InputMatcher</code></td><td>Non-generic</td></tr>
-<tr><td><code>enum MatchingData</code></td><td><code>type MatchingValue = string | number | boolean | Uint8Array | null</code></td><td>Union type</td></tr>
+<tr><td><code>enum MatchingData</code></td><td><code>type MatchingData = string | number | boolean | Uint8Array | null</code></td><td>Union type</td></tr>
 <tr><td><code>enum Predicate&lt;Ctx&gt;</code></td><td><code>type Predicate&lt;Ctx&gt; = Single&lt;Ctx&gt; | And&lt;Ctx&gt; | Or&lt;Ctx&gt; | Not&lt;Ctx&gt;</code></td><td>Discriminated union</td></tr>
 <tr><td><code>enum OnMatch&lt;Ctx, A&gt;</code></td><td><code>type OnMatch&lt;Ctx, A&gt; = Action&lt;A&gt; | NestedMatcher&lt;Ctx, A&gt;</code></td><td>Discriminated union</td></tr>
 </tbody>
