@@ -49,13 +49,16 @@ if git diff --cached --name-only | grep -q "\.rs$"; then
     NEEDS_FMT=0
     NEEDS_CLIPPY=0
 
+    # Uses default-members (not --workspace) so puma-crusty is excluded automatically.
+    # puma-crusty uses PyO3 extension-module (no libpython link) — test via maturin+pytest.
+
     cargo fmt --manifest-path "$RUST_MANIFEST" --all -- --check 2>/dev/null || NEEDS_FMT=1
-    cargo clippy --manifest-path "$RUST_MANIFEST" --workspace -- -W clippy::pedantic -D warnings 2>/dev/null || NEEDS_CLIPPY=1
+    cargo clippy --manifest-path "$RUST_MANIFEST" -- -W clippy::pedantic -D warnings 2>/dev/null || NEEDS_CLIPPY=1
 
     # Auto-fix if needed, then fail so user re-stages
     if [ "$NEEDS_CLIPPY" -eq 1 ] || [ "$NEEDS_FMT" -eq 1 ]; then
         echo "Auto-fixing issues..."
-        cargo clippy --manifest-path "$RUST_MANIFEST" --workspace --fix --allow-dirty -- -W clippy::pedantic 2>/dev/null || true
+        cargo clippy --manifest-path "$RUST_MANIFEST" --fix --allow-dirty -- -W clippy::pedantic 2>/dev/null || true
         cargo fmt --manifest-path "$RUST_MANIFEST" --all
         echo ""
         echo "Files fixed. Run 'git add -u && git commit' again."
@@ -66,7 +69,7 @@ if git diff --cached --name-only | grep -q "\.rs$"; then
 
     # Tests
     echo "Running tests..."
-    cargo test --manifest-path "$RUST_MANIFEST" --workspace || { echo "Tests failed"; exit 1; }
+    cargo test --manifest-path "$RUST_MANIFEST" || { echo "Tests failed"; exit 1; }
 
     # no_std check (core only) — disabled until no_std is implemented
     # echo "Verifying no_std compatibility..."
