@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 /// All Claude Code hook event types.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum HookEvent {
     /// Before a tool executes.
     PreToolUse,

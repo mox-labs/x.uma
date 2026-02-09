@@ -8,7 +8,7 @@ use rumi::prelude::*;
 use std::fmt;
 
 /// How to match a string value.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum StringMatch {
     /// Exact equality.
     Exact(String),
@@ -75,7 +75,8 @@ impl fmt::Display for StringMatch {
 ///     ..Default::default()
 /// };
 /// ```
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct HookMatch {
     /// Match on hook event type (exact match).
     pub event: Option<HookEvent>,
@@ -90,7 +91,8 @@ pub struct HookMatch {
 }
 
 /// Match a specific tool argument by name.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ArgumentMatch {
     /// The argument name to extract.
     pub name: String,
