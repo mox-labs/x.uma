@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "rust";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-1e1393d1.js";
+            window.path_to_searchindex_js = "../searchindex-6b1472f2.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-4608792b.js"></script>
+        <script src="../toc-9ddb2f6c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -181,18 +181,22 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="http-domain-reference"><a class="header" href="#http-domain-reference">HTTP Domain Reference</a></h1>
-<p><code>rumi-http</code> provides HTTP request matching for Envoy ext_proc.</p>
-<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
+<p>HTTP request matching across rumi (Rust) and puma (Python).</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>Both implementations provide the same HTTP matching capabilities with Gateway API-style config and DataInput implementations for HTTP contexts.</p>
+<p><strong>For Python users:</strong> See <a href="python.html">Python API Reference</a> for the <code>puma.http</code> module.</p>
+<p><strong>This page focuses on Rust (rumi-http).</strong></p>
+<h2 id="architecture-rumi-http"><a class="header" href="#architecture-rumi-http">Architecture (rumi-http)</a></h2>
 <pre><code>Gateway API HttpRouteMatch (config)
         ↓ compile()
-rumi Matcher&lt;ProcessingRequest, A&gt;
+rumi Matcher&lt;HttpMessage, A&gt;
         ↓ evaluate()
 ext_proc ProcessingRequest (runtime)
 </code></pre>
 <p><strong>Two layers:</strong></p>
 <ul>
 <li><strong>User API</strong>: Gateway API <code>HttpRouteMatch</code> — human-friendly config</li>
-<li><strong>Data Plane API</strong>: Envoy <code>ProcessingRequest</code> — wire protocol</li>
+<li><strong>Data Plane API</strong>: Envoy <code>ProcessingRequest</code> — wire protocol (indexed as <code>HttpMessage</code>)</li>
 </ul>
 <h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
@@ -207,11 +211,11 @@ let route_match = HttpRouteMatch {
 };
 let matcher = route_match.compile("api_backend");
 
-// Runtime: evaluate against ext_proc ProcessingRequest
-let result = matcher.evaluate(&amp;processing_request);
+// Runtime: evaluate against HttpMessage (indexed view over ProcessingRequest)
+let result = matcher.evaluate(&amp;http_message);
 assert_eq!(result, Some("api_backend"));
 <span class="boring">}</span></code></pre>
-<h2 id="datainputs-for-processingrequest"><a class="header" href="#datainputs-for-processingrequest">DataInputs for ProcessingRequest</a></h2>
+<h2 id="datainputs-for-httpmessage"><a class="header" href="#datainputs-for-httpmessage">DataInputs for HttpMessage</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -310,24 +314,32 @@ let matches = vec![
 // Multiple matches are ORed
 let matcher = compile_route_matches(&amp;matches, "backend", None);
 <span class="boring">}</span></code></pre>
-<h2 id="testing-with-simplehttprequest"><a class="header" href="#testing-with-simplehttprequest">Testing with SimpleHttpRequest</a></h2>
-<p>For unit tests without constructing full <code>ProcessingRequest</code>:</p>
+<h2 id="python-equivalent"><a class="header" href="#python-equivalent">Python Equivalent</a></h2>
+<p>See <a href="python.html">Python API Reference</a> for the Python implementation.</p>
+<p>Quick comparison:</p>
+<p><strong>Rust (rumi-http):</strong></p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use rumi_http::prelude::*;
+</span>use rumi_http::{HttpRouteMatch, HttpPathMatch, compile_route_matches};
 
-let request = HttpRequest::builder()
-    .method("POST")
-    .path("/api/users")
-    .header("Content-Type", "application/json")
-    .query_param("page", "1")
-    .build();
-
-// Use Simple*Input types for matching
-let method_input = SimpleMethodInput;
-assert_eq!(method_input.get(&amp;request), MatchingData::String("POST".into()));
+let route = HttpRouteMatch {
+    path: Some(HttpPathMatch::PathPrefix { value: "/api".into() }),
+    method: Some("GET".into()),
+    ..Default::default()
+};
+let matcher = route.compile("api_backend");
 <span class="boring">}</span></code></pre>
-<h2 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h2>
+<p><strong>Python (puma.http):</strong></p>
+<pre><code class="language-python">from puma.http import HttpRouteMatch, HttpPathMatch, compile_route_matches
+
+route = HttpRouteMatch(
+    path=HttpPathMatch(type="PathPrefix", value="/api"),
+    method="GET",
+)
+matcher = route.compile("api_backend")
+</code></pre>
+<p>Both produce functionally identical matchers that pass the same conformance tests.</p>
+<h2 id="dependencies-rust"><a class="header" href="#dependencies-rust">Dependencies (Rust)</a></h2>
 <div class="table-wrapper">
 <table>
 <thead>
@@ -341,6 +353,7 @@ assert_eq!(method_input.get(&amp;request), MatchingData::String("POST".into()));
 </div>
 <h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
 <ul>
+<li><a href="python.html">Python API Reference</a> — puma.http module</li>
 <li><a href="https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRouteMatch">Gateway API HTTPRoute Spec</a></li>
 <li><a href="https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/ext_proc_filter">Envoy ext_proc Documentation</a></li>
 </ul>
@@ -349,7 +362,7 @@ assert_eq!(method_input.get(&amp;request), MatchingData::String("POST".into()));
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../reference/rust.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../reference/python.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
@@ -363,7 +376,7 @@ assert_eq!(method_input.get(&amp;request), MatchingData::String("POST".into()));
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../reference/rust.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../reference/python.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 

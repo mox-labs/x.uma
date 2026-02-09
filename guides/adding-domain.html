@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "rust";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-1e1393d1.js";
+            window.path_to_searchindex_js = "../searchindex-6b1472f2.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-4608792b.js"></script>
+        <script src="../toc-9ddb2f6c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -181,70 +181,382 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="adding-a-domain"><a class="header" href="#adding-a-domain">Adding a Domain</a></h1>
-<p>Create domain-specific matchers for HTTP, gRPC, or your custom protocol.</p>
-<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
-<p>A “domain” in x.uma is a context type with associated <code>DataInput</code> implementations.</p>
-<pre><code class="language-text">proto/xuma/&lt;domain&gt;/v1/    → Proto definitions
-rumi/ext/&lt;domain&gt;/src/     → Rust implementations
-</code></pre>
-<h2 id="step-1-define-proto"><a class="header" href="#step-1-define-proto">Step 1: Define Proto</a></h2>
-<pre><code class="language-protobuf">// proto/xuma/http/v1/inputs.proto
-syntax = "proto3";
-package xuma.http.v1;
-
-message HeaderInput {
-  string header_name = 1;
+<p>Create domain-specific matchers for HTTP, gRPC, CloudEvents, or your custom protocol.</p>
+<p>A “domain” in x.uma is a context type with associated <code>DataInput</code> implementations. This guide shows how to add a domain in both Rust (rumi) and Python (puma).</p>
+<h2 id="concept-cloudevent-matching"><a class="header" href="#concept-cloudevent-matching">Concept: CloudEvent Matching</a></h2>
+<p>We’ll build a matcher for <a href="https://cloudevents.io/">CloudEvents</a> — a CNCF spec for event metadata.</p>
+<pre><code class="language-json">{
+  "specversion": "1.0",
+  "type": "com.example.user.created",
+  "source": "api-server",
+  "id": "abc-123",
+  "subject": "user/42"
 }
-
-message PathInput {}
 </code></pre>
-<h2 id="step-2-generate-bindings"><a class="header" href="#step-2-generate-bindings">Step 2: Generate Bindings</a></h2>
+<p><strong>Goal:</strong> Match events by type, source, or subject.</p>
+<h2 id="python-implementation-puma"><a class="header" href="#python-implementation-puma">Python Implementation (puma)</a></h2>
+<h3 id="step-1-define-the-context-type"><a class="header" href="#step-1-define-the-context-type">Step 1: Define the Context Type</a></h3>
+<pre><code class="language-python"># my_events.py
+from dataclasses import dataclass
+
+@dataclass(frozen=True, slots=True)
+class CloudEvent:
+    """CloudEvents v1.0 context."""
+    type: str
+    source: str
+    id: str
+    subject: str | None = None
+</code></pre>
+<h3 id="step-2-implement-datainput"><a class="header" href="#step-2-implement-datainput">Step 2: Implement DataInput</a></h3>
+<pre><code class="language-python">from puma import DataInput, MatchingValue
+
+@dataclass(frozen=True, slots=True)
+class EventTypeInput:
+    """Extract event type."""
+    def get(self, ctx: CloudEvent, /) -&gt; MatchingValue:
+        return ctx.type
+
+@dataclass(frozen=True, slots=True)
+class EventSourceInput:
+    """Extract event source."""
+    def get(self, ctx: CloudEvent, /) -&gt; MatchingValue:
+        return ctx.source
+
+@dataclass(frozen=True, slots=True)
+class EventSubjectInput:
+    """Extract event subject (may be None)."""
+    def get(self, ctx: CloudEvent, /) -&gt; MatchingValue:
+        return ctx.subject  # None triggers None → false invariant
+</code></pre>
+<h3 id="step-3-build-matchers"><a class="header" href="#step-3-build-matchers">Step 3: Build Matchers</a></h3>
+<pre><code class="language-python">from puma import (
+    Matcher, FieldMatcher, SinglePredicate, Action,
+    ExactMatcher, PrefixMatcher, And,
+)
+
+# Match user creation events from api-server
+user_created_matcher = Matcher(
+    matcher_list=(
+        FieldMatcher(
+            predicate=And((
+                SinglePredicate(
+                    EventTypeInput(),
+                    PrefixMatcher("com.example.user.")
+                ),
+                SinglePredicate(
+                    EventSourceInput(),
+                    ExactMatcher("api-server")
+                ),
+            )),
+            on_match=Action("handle_user_event"),
+        ),
+    ),
+    on_no_match=Action("ignore"),
+)
+
+# Evaluate
+event = CloudEvent(
+    type="com.example.user.created",
+    source="api-server",
+    id="abc-123",
+)
+action = user_created_matcher.evaluate(event)
+assert action == "handle_user_event"
+</code></pre>
+<h3 id="step-4-optional-compiler-gateway-api-style"><a class="header" href="#step-4-optional-compiler-gateway-api-style">Step 4: Optional Compiler (Gateway API Style)</a></h3>
+<p>For ergonomic config-time APIs, add a compiler:</p>
+<pre><code class="language-python">from dataclasses import dataclass, field
+from typing import Literal
+from puma import Predicate, SinglePredicate, ExactMatcher, PrefixMatcher, Matcher, FieldMatcher, Action
+
+@dataclass(frozen=True, slots=True)
+class EventMatch:
+    """Config-time event match specification."""
+    type: str | None = None
+    source: str | None = None
+    subject: str | None = None
+
+    def to_predicate(self) -&gt; Predicate[CloudEvent]:
+        """Compile to predicate tree."""
+        predicates: list[SinglePredicate[CloudEvent]] = []
+
+        if self.type is not None:
+            predicates.append(
+                SinglePredicate(EventTypeInput(), ExactMatcher(self.type))
+            )
+        if self.source is not None:
+            predicates.append(
+                SinglePredicate(EventSourceInput(), ExactMatcher(self.source))
+            )
+        if self.subject is not None:
+            predicates.append(
+                SinglePredicate(EventSubjectInput(), ExactMatcher(self.subject))
+            )
+
+        if not predicates:
+            # Match everything
+            return SinglePredicate(EventTypeInput(), PrefixMatcher(""))
+
+        if len(predicates) == 1:
+            return predicates[0]
+
+        return And(tuple(predicates))
+
+    def compile[A](self, action: A) -&gt; Matcher[CloudEvent, A]:
+        """Compile to matcher."""
+        return Matcher(
+            matcher_list=(FieldMatcher(self.to_predicate(), Action(action)),),
+        )
+
+# Usage
+match_config = EventMatch(type="com.example.user.created", source="api-server")
+matcher = match_config.compile("handle_user_event")
+</code></pre>
+<p>That’s it. The same string matchers, predicates, and matcher tree logic work for CloudEvents.</p>
+<h2 id="rust-implementation-rumi"><a class="header" href="#rust-implementation-rumi">Rust Implementation (rumi)</a></h2>
+<h3 id="step-1-define-proto-optional"><a class="header" href="#step-1-define-proto-optional">Step 1: Define Proto (Optional)</a></h3>
+<p>If using xDS proto extension mechanism:</p>
+<pre><code class="language-protobuf">// proto/xuma/events/v1/inputs.proto
+syntax = "proto3";
+package xuma.events.v1;
+
+message EventTypeInput {}
+message EventSourceInput {}
+message EventSubjectInput {}
+</code></pre>
+<p>Generate Rust bindings:</p>
 <pre><code class="language-bash">just gen
 </code></pre>
-<h2 id="step-3-implement-datainput"><a class="header" href="#step-3-implement-datainput">Step 3: Implement DataInput</a></h2>
-<pre><code class="language-rust ignore">// rumi/ext/http/src/lib.rs
-use rumi::{DataInput, MatchingData};
+<h3 id="step-2-define-the-context-type"><a class="header" href="#step-2-define-the-context-type">Step 2: Define the Context Type</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// rumi/ext/events/src/lib.rs
 use std::collections::HashMap;
 
+#[derive(Debug, Clone)]
+pub struct CloudEvent {
+    pub event_type: String,
+    pub source: String,
+    pub id: String,
+    pub subject: Option&lt;String&gt;,
+}
+<span class="boring">}</span></code></pre>
+<h3 id="step-3-implement-datainput"><a class="header" href="#step-3-implement-datainput">Step 3: Implement DataInput</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use rumi::{DataInput, MatchingData};
+
 #[derive(Debug)]
-pub struct HttpRequest {
-    pub headers: HashMap&lt;String, String&gt;,
-    pub path: String,
+pub struct EventTypeInput;
+
+impl DataInput&lt;CloudEvent&gt; for EventTypeInput {
+    fn get(&amp;self, ctx: &amp;CloudEvent) -&gt; MatchingData {
+        MatchingData::String(ctx.event_type.clone())
+    }
 }
 
 #[derive(Debug)]
-pub struct HeaderInput {
-    pub header_name: String,
+pub struct EventSourceInput;
+
+impl DataInput&lt;CloudEvent&gt; for EventSourceInput {
+    fn get(&amp;self, ctx: &amp;CloudEvent) -&gt; MatchingData {
+        MatchingData::String(ctx.source.clone())
+    }
 }
 
-impl DataInput&lt;HttpRequest&gt; for HeaderInput {
-    fn get(&amp;self, ctx: &amp;HttpRequest) -&gt; MatchingData {
-        ctx.headers
-            .get(&amp;self.header_name)
-            .map(|v| MatchingData::String(v.clone()))
+#[derive(Debug)]
+pub struct EventSubjectInput;
+
+impl DataInput&lt;CloudEvent&gt; for EventSubjectInput {
+    fn get(&amp;self, ctx: &amp;CloudEvent) -&gt; MatchingData {
+        ctx.subject
+            .as_ref()
+            .map(|s| MatchingData::String(s.clone()))
             .unwrap_or(MatchingData::None)
     }
-}</code></pre>
-<h2 id="step-4-add-conformance-tests"><a class="header" href="#step-4-add-conformance-tests">Step 4: Add Conformance Tests</a></h2>
-<pre><code class="language-yaml"># spec/tests/http/header_exact.yaml
-name: "HTTP header exact match"
+}
+<span class="boring">}</span></code></pre>
+<h3 id="step-4-build-matchers"><a class="header" href="#step-4-build-matchers">Step 4: Build Matchers</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use rumi::prelude::*;
+
+// Match user creation events from api-server
+let user_created_matcher = Matcher::new(
+    vec![
+        FieldMatcher::new(
+            Predicate::And {
+                predicates: vec![
+                    Predicate::Single(SinglePredicate::new(
+                        Box::new(EventTypeInput),
+                        Box::new(PrefixMatcher::new("com.example.user.")),
+                    )),
+                    Predicate::Single(SinglePredicate::new(
+                        Box::new(EventSourceInput),
+                        Box::new(ExactMatcher::new("api-server")),
+                    )),
+                ],
+            },
+            OnMatch::Action("handle_user_event"),
+        ),
+    ],
+    Some(OnMatch::Action("ignore")),
+)?;
+
+// Evaluate
+let event = CloudEvent {
+    event_type: "com.example.user.created".into(),
+    source: "api-server".into(),
+    id: "abc-123".into(),
+    subject: None,
+};
+
+let action = user_created_matcher.evaluate(&amp;event);
+assert_eq!(action, Some("handle_user_event"));
+<span class="boring">}</span></code></pre>
+<h3 id="step-5-optional-compiler-gateway-api-style"><a class="header" href="#step-5-optional-compiler-gateway-api-style">Step 5: Optional Compiler (Gateway API Style)</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Debug, Clone)]
+pub struct EventMatch {
+    pub event_type: Option&lt;String&gt;,
+    pub source: Option&lt;String&gt;,
+    pub subject: Option&lt;String&gt;,
+}
+
+impl EventMatch {
+    pub fn compile&lt;A&gt;(self, action: A) -&gt; Result&lt;Matcher&lt;CloudEvent, A&gt;, MatcherError&gt;
+    where
+        A: Clone,
+    {
+        let predicate = self.to_predicate();
+        Matcher::new(
+            vec![FieldMatcher::new(predicate, OnMatch::Action(action))],
+            None,
+        )
+    }
+
+    fn to_predicate(&amp;self) -&gt; Predicate&lt;CloudEvent&gt; {
+        let mut predicates = Vec::new();
+
+        if let Some(ref t) = self.event_type {
+            predicates.push(Predicate::Single(SinglePredicate::new(
+                Box::new(EventTypeInput),
+                Box::new(ExactMatcher::new(t)),
+            )));
+        }
+        if let Some(ref s) = self.source {
+            predicates.push(Predicate::Single(SinglePredicate::new(
+                Box::new(EventSourceInput),
+                Box::new(ExactMatcher::new(s)),
+            )));
+        }
+        if let Some(ref subj) = self.subject {
+            predicates.push(Predicate::Single(SinglePredicate::new(
+                Box::new(EventSubjectInput),
+                Box::new(ExactMatcher::new(subj)),
+            )));
+        }
+
+        if predicates.is_empty() {
+            // Match everything
+            Predicate::Single(SinglePredicate::new(
+                Box::new(EventTypeInput),
+                Box::new(PrefixMatcher::new("")),
+            ))
+        } else if predicates.len() == 1 {
+            predicates.into_iter().next().unwrap()
+        } else {
+            Predicate::And { predicates }
+        }
+    }
+}
+
+// Usage
+let match_config = EventMatch {
+    event_type: Some("com.example.user.created".into()),
+    source: Some("api-server".into()),
+    subject: None,
+};
+let matcher = match_config.compile("handle_user_event")?;
+<span class="boring">}</span></code></pre>
+<h2 id="add-conformance-tests"><a class="header" href="#add-conformance-tests">Add Conformance Tests</a></h2>
+<p>Both implementations should pass the same test fixtures.</p>
+<pre><code class="language-yaml"># spec/tests/events/type_exact.yaml
+name: "CloudEvent type exact match"
+context:
+  type: "com.example.user.created"
+  source: "api-server"
+  id: "abc-123"
 cases:
-  - description: "matches header value"
-    input:
-      headers: { "content-type": "application/json" }
+  - description: "matches event type"
     matcher:
-      input: { header_name: "content-type" }
-      matcher: { exact: "application/json" }
+      input: { event_type: {} }
+      matcher: { exact: "com.example.user.created" }
     expected: { matches: true }
+
+  - description: "rejects wrong type"
+    matcher:
+      input: { event_type: {} }
+      matcher: { exact: "com.example.order.created" }
+    expected: { matches: false }
 </code></pre>
-<h2 id="step-5-feature-gate"><a class="header" href="#step-5-feature-gate">Step 5: Feature Gate</a></h2>
-<pre><code class="language-toml"># rumi/ext/http/Cargo.toml
-[features]
-default = []
+<p><strong>Test runners:</strong></p>
+<ul>
+<li>Rust: Parse YAML, construct <code>CloudEvent</code> and <code>Matcher&lt;CloudEvent, _&gt;</code>, assert</li>
+<li>Python: Parse YAML, construct <code>CloudEvent</code> and <code>Matcher[CloudEvent, _]</code>, assert</li>
+</ul>
+<h2 id="key-patterns"><a class="header" href="#key-patterns">Key Patterns</a></h2>
+<h3 id="none-handling"><a class="header" href="#none-handling">None Handling</a></h3>
+<p>When a <code>DataInput</code> returns <code>None</code> (Rust) or <code>None</code> (Python), the predicate evaluates to <code>False</code> without consulting the matcher. This is the <strong>None → false invariant</strong>.</p>
+<pre><code class="language-python"># Python
+@dataclass(frozen=True, slots=True)
+class EventSubjectInput:
+    def get(self, ctx: CloudEvent, /) -&gt; MatchingValue:
+        return ctx.subject  # May be None
+
+# If subject is None, predicate returns False
 </code></pre>
-<pre><code class="language-rust ignore">// rumi/ext/http/src/lib.rs
-pub mod headers;
-pub mod path;</code></pre>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Rust
+impl DataInput&lt;CloudEvent&gt; for EventSubjectInput {
+    fn get(&amp;self, ctx: &amp;CloudEvent) -&gt; MatchingData {
+        ctx.subject
+            .as_ref()
+            .map(|s| MatchingData::String(s.clone()))
+            .unwrap_or(MatchingData::None)  // Triggers None → false
+    }
+}
+<span class="boring">}</span></code></pre>
+<h3 id="immutability"><a class="header" href="#immutability">Immutability</a></h3>
+<p>All context types should be immutable:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Language</th><th>Pattern</th></tr>
+</thead>
+<tbody>
+<tr><td>Rust</td><td>Don’t provide <code>&amp;mut</code> access, clone when needed</td></tr>
+<tr><td>Python</td><td><code>@dataclass(frozen=True)</code></td></tr>
+<tr><td>TypeScript</td><td><code>readonly</code> fields</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="type-safety"><a class="header" href="#type-safety">Type Safety</a></h3>
+<p>The compiler ensures:</p>
+<ul>
+<li><code>DataInput&lt;CloudEvent&gt;</code> can only be used with <code>Matcher&lt;CloudEvent, A&gt;</code></li>
+<li>You can’t accidentally mix HTTP and CloudEvent inputs in the same matcher</li>
+<li><code>OnMatch</code> is exclusive — action XOR nested matcher, never both</li>
+</ul>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="../reference/python.html">Python API Reference</a> — puma types</li>
+<li><a href="../reference/rust.html">Rust API Reference</a> — rumi types</li>
+<li><a href="../reference/http.html">HTTP Domain</a> — Real-world example</li>
+<li><a href="../explain/architecture.html">Architecture</a> — Type system deep dive</li>
+</ul>
 
                     </main>
 

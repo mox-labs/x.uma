@@ -35,10 +35,10 @@
             const path_to_root = "";
             const default_light_theme = "rust";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "searchindex-1e1393d1.js";
+            window.path_to_searchindex_js = "searchindex-6b1472f2.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-4608792b.js"></script>
+        <script src="toc-9ddb2f6c.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -184,55 +184,94 @@
 <blockquote>
 <p>Cross-Platform Unified Matcher API</p>
 </blockquote>
-<p>x.uma implements the <a href="https://github.com/cncf/xds">xDS Unified Matcher API</a> across multiple languages and domains.</p>
-<h2 id="what-is-it"><a class="header" href="#what-is-it">What is it?</a></h2>
-<p>A <strong>matcher</strong> evaluates data against rules and returns an action. Think: routing, filtering, access control.</p>
-<pre><code class="language-text">Input → Matcher → Action
-</code></pre>
-<p>x.uma provides:</p>
-<ul>
-<li><strong>rumi</strong> — Rust core engine (reference implementation)</li>
-<li><strong>p.uma</strong> — Python bindings (coming soon)</li>
-<li><strong>j.uma</strong> — TypeScript/WASM (coming soon)</li>
-</ul>
-<h2 id="why-xuma"><a class="header" href="#why-xuma">Why x.uma?</a></h2>
-<p><strong>Domain-agnostic core.</strong> The same matcher logic works for HTTP headers, Claude hooks, gRPC metadata, or your custom domain.</p>
-<p><strong>Type-safe composition.</strong> Predicates compose with AND/OR/NOT. Matchers nest. Actions are exclusive.</p>
-<p><strong>xDS compatible.</strong> Built on the same protocol Envoy uses at scale.</p>
+<p><strong>Alpha status</strong> — API is under active development and will change.</p>
+<p>x.uma implements the <a href="https://github.com/cncf/xds">xDS Unified Matcher API</a> across multiple languages. Match structured data (HTTP requests, events, messages) against rule trees with first-match-wins semantics.</p>
+<h2 id="implementations"><a class="header" href="#implementations">Implementations</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Package</th><th>Language</th><th>Status</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>rumi</strong></td><td>Rust</td><td>Production-ready core</td></tr>
+<tr><td><strong>puma</strong></td><td>Python 3.12+</td><td>Alpha (v0.1.0)</td></tr>
+<tr><td><strong>bumi</strong></td><td>TypeScript/Bun</td><td>Planned</td></tr>
+<tr><td><strong>puma-crusty</strong></td><td>Python (Rust bindings)</td><td>Planned</td></tr>
+<tr><td><strong>bumi-crusty</strong></td><td>TypeScript (WASM bindings)</td><td>Planned</td></tr>
+</tbody>
+</table>
+</div>
+<p>All implementations pass the same conformance test suite.</p>
 <h2 id="quick-example"><a class="header" href="#quick-example">Quick Example</a></h2>
+<p>The same pattern in Rust and Python.</p>
+<h3 id="rust"><a class="header" href="#rust">Rust</a></h3>
 <pre><code class="language-rust ignore">use rumi::prelude::*;
+use rumi_http::{HttpMessage, PathInput, PrefixMatcher};
 
-// Define what data we're matching on
-#[derive(Debug)]
-struct Request { path: String }
-
-#[derive(Debug)]
-struct PathInput;
-
-impl DataInput&lt;Request&gt; for PathInput {
-    fn get(&amp;self, ctx: &amp;Request) -&gt; MatchingData {
-        MatchingData::String(ctx.path.clone())
-    }
-}
-
-// Build a matcher
-let matcher: Matcher&lt;Request, &amp;str&gt; = Matcher::new(
+let matcher = Matcher::new(
     vec![
         FieldMatcher::new(
             Predicate::Single(SinglePredicate::new(
                 Box::new(PathInput),
-                Box::new(PrefixMatcher::new("/api/")),
+                Box::new(PrefixMatcher::new("/api")),
             )),
             OnMatch::Action("api_handler"),
         ),
     ],
-    Some(OnMatch::Action("default_handler")),
+    Some(OnMatch::Action("default")),
 );
 
-// Evaluate
-let req = Request { path: "/api/users".into() };
-let result = matcher.evaluate(&amp;req);
-// → Some("api_handler")</code></pre>
+// ProcessingRequest -&gt; HttpMessage -&gt; evaluate
+let action = matcher.evaluate(&amp;http_message);</code></pre>
+<h3 id="python"><a class="header" href="#python">Python</a></h3>
+<pre><code class="language-python">from puma import Matcher, FieldMatcher, SinglePredicate, Action
+from puma import PrefixMatcher
+from puma.http import HttpRequest, PathInput
+
+matcher = Matcher(
+    matcher_list=(
+        FieldMatcher(
+            predicate=SinglePredicate(
+                input=PathInput(),
+                matcher=PrefixMatcher("/api")
+            ),
+            on_match=Action("api_handler")
+        ),
+    ),
+    on_no_match=Action("default")
+)
+
+request = HttpRequest(method="GET", raw_path="/api/users")
+action = matcher.evaluate(request)  # "api_handler"
+</code></pre>
+<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
+<p>x.uma follows hexagonal architecture (ports and adapters). The core is domain-agnostic. Domains plug in at the edges.</p>
+<pre><code class="language-text">┌─────────────────────────────────┐
+│       Domain Adapters           │
+│   HTTP  CloudEvent  Custom      │
+└───────────────┬─────────────────┘
+                │
+┌───────────────▼─────────────────┐
+│           PORTS                 │
+│  DataInput[Ctx] → MatchingValue │
+│  InputMatcher → bool            │
+└───────────────┬─────────────────┘
+                │
+┌───────────────▼─────────────────┐
+│           CORE                  │
+│  Matcher, Predicate, Actions    │
+│    (domain-agnostic)            │
+└─────────────────────────────────┘
+</code></pre>
+<p><strong>DataInput</strong> extracts values from your context (HTTP request, event, custom type).</p>
+<p><strong>InputMatcher</strong> matches the extracted value (exact, prefix, regex, etc).</p>
+<p><strong>Matcher</strong> composes predicates with first-match-wins semantics.</p>
+<p>The same <code>ExactMatcher</code> works for HTTP headers, event types, or your custom domain. This is the key design insight from Envoy’s matcher architecture.</p>
+<h2 id="why-xuma"><a class="header" href="#why-xuma">Why x.uma?</a></h2>
+<p><strong>Domain-agnostic core.</strong> The same matcher logic works for HTTP routing, event filtering, access control, or your custom domain. Add a new domain by implementing <code>DataInput</code> for your context type.</p>
+<p><strong>Type-safe composition.</strong> Predicates compose with AND/OR/NOT. Matchers nest. Actions are exclusive (action XOR nested matcher, never both).</p>
+<p><strong>Battle-tested semantics.</strong> Built on the same xDS protocol Envoy uses at Google scale. First-match-wins, nested matcher failure propagation, depth limits — all enforced by design.</p>
+<p><strong>Multi-language.</strong> Same API across Rust, Python, and TypeScript. Write matchers once, run anywhere.</p>
 <h2 id="documentation"><a class="header" href="#documentation">Documentation</a></h2>
 <div class="table-wrapper">
 <table>
@@ -240,14 +279,31 @@ let result = matcher.evaluate(&amp;req);
 <tr><th>Section</th><th>What you’ll learn</th></tr>
 </thead>
 <tbody>
-<tr><td><a href="learn/quick-start.html">Quick Start</a></td><td>Get running in 5 minutes</td></tr>
-<tr><td><a href="learn/concepts.html">Concepts</a></td><td>Core ideas and terminology</td></tr>
+<tr><td><a href="learn/quick-start.html">Quick Start</a></td><td>Get running in 5 minutes (Rust and Python)</td></tr>
+<tr><td><a href="learn/concepts.html">Concepts</a></td><td>Core abstractions and terminology</td></tr>
 <tr><td><a href="explain/architecture.html">Architecture</a></td><td>Why it’s built this way</td></tr>
-<tr><td><a href="reference/proto.html">Proto API</a></td><td>Generated from <code>.proto</code> files</td></tr>
-<tr><td><a href="reference/rust.html">Rust API</a></td><td>Generated from <code>rustdoc</code></td></tr>
+<tr><td><a href="reference/proto.html">Proto API</a></td><td>xDS protocol definitions</td></tr>
+<tr><td><a href="reference/rust.html">Rust API</a></td><td>rumi API reference</td></tr>
+<tr><td><a href="reference/python.html">Python API</a></td><td>puma API reference</td></tr>
 </tbody>
 </table>
 </div>
+<h2 id="status"><a class="header" href="#status">Status</a></h2>
+<p>x.uma is alpha software. The API is under active development and will change.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Phase</th><th>Focus</th><th>Status</th></tr>
+</thead>
+<tbody>
+<tr><td>5</td><td>Python (puma)</td><td>✅ Done (v0.1.0)</td></tr>
+<tr><td>6</td><td>TypeScript (bumi)</td><td>Next</td></tr>
+<tr><td>7</td><td>Python Rust bindings (puma-crusty)</td><td>Planned</td></tr>
+<tr><td>8</td><td>TypeScript WASM bindings (bumi-crusty)</td><td>Planned</td></tr>
+</tbody>
+</table>
+</div>
+<p>See <a href="development/roadmap.html">Roadmap</a> for details.</p>
 
                     </main>
 
