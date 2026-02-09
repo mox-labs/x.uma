@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from puma._types import MatchingValue
+    from puma._types import MatchingData
 
 
 @dataclass(frozen=True, slots=True)
@@ -40,7 +40,7 @@ class ExactMatcher:
             self, "_cmp_value", self.value.casefold() if self.ignore_case else self.value
         )
 
-    def matches(self, value: MatchingValue, /) -> bool:
+    def matches(self, value: MatchingData, /) -> bool:
         if not isinstance(value, str):
             return False
         input_val = value.casefold() if self.ignore_case else value
@@ -64,7 +64,7 @@ class PrefixMatcher:
             self, "_cmp_prefix", self.prefix.casefold() if self.ignore_case else self.prefix
         )
 
-    def matches(self, value: MatchingValue, /) -> bool:
+    def matches(self, value: MatchingData, /) -> bool:
         if not isinstance(value, str):
             return False
         input_val = value.casefold() if self.ignore_case else value
@@ -88,7 +88,7 @@ class SuffixMatcher:
             self, "_cmp_suffix", self.suffix.casefold() if self.ignore_case else self.suffix
         )
 
-    def matches(self, value: MatchingValue, /) -> bool:
+    def matches(self, value: MatchingData, /) -> bool:
         if not isinstance(value, str):
             return False
         input_val = value.casefold() if self.ignore_case else value
@@ -115,7 +115,7 @@ class ContainsMatcher:
             self.substring.casefold() if self.ignore_case else self.substring,
         )
 
-    def matches(self, value: MatchingValue, /) -> bool:
+    def matches(self, value: MatchingData, /) -> bool:
         if not isinstance(value, str):
             return False
         input_val = value.casefold() if self.ignore_case else value
@@ -147,7 +147,7 @@ class RegexMatcher:
     def __post_init__(self) -> None:
         object.__setattr__(self, "_compiled", re.compile(self.pattern))
 
-    def matches(self, value: MatchingValue, /) -> bool:
+    def matches(self, value: MatchingData, /) -> bool:
         if not isinstance(value, str):
             return False
         return self._compiled.search(value) is not None

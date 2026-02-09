@@ -1,5 +1,5 @@
 import { MatcherError } from "./matcher.ts";
-import type { MatchingValue } from "./types.ts";
+import type { MatchingData } from "./types.ts";
 
 /** Exact string equality. Pre-lowercases at construction when ignore_case. */
 export class ExactMatcher {
@@ -12,7 +12,7 @@ export class ExactMatcher {
 		this.cmpValue = ignoreCase ? value.toLowerCase() : value;
 	}
 
-	matches(value: MatchingValue): boolean {
+	matches(value: MatchingData): boolean {
 		if (typeof value !== "string") return false;
 		const input = this.ignoreCase ? value.toLowerCase() : value;
 		return input === this.cmpValue;
@@ -30,7 +30,7 @@ export class PrefixMatcher {
 		this.cmpPrefix = ignoreCase ? prefix.toLowerCase() : prefix;
 	}
 
-	matches(value: MatchingValue): boolean {
+	matches(value: MatchingData): boolean {
 		if (typeof value !== "string") return false;
 		const input = this.ignoreCase ? value.toLowerCase() : value;
 		return input.startsWith(this.cmpPrefix);
@@ -48,7 +48,7 @@ export class SuffixMatcher {
 		this.cmpSuffix = ignoreCase ? suffix.toLowerCase() : suffix;
 	}
 
-	matches(value: MatchingValue): boolean {
+	matches(value: MatchingData): boolean {
 		if (typeof value !== "string") return false;
 		const input = this.ignoreCase ? value.toLowerCase() : value;
 		return input.endsWith(this.cmpSuffix);
@@ -66,7 +66,7 @@ export class ContainsMatcher {
 		this.cmpSubstring = ignoreCase ? substring.toLowerCase() : substring;
 	}
 
-	matches(value: MatchingValue): boolean {
+	matches(value: MatchingData): boolean {
 		if (typeof value !== "string") return false;
 		const input = this.ignoreCase ? value.toLowerCase() : value;
 		return input.includes(this.cmpSubstring);
@@ -93,7 +93,7 @@ export class RegexMatcher {
 		}
 	}
 
-	matches(value: MatchingValue): boolean {
+	matches(value: MatchingData): boolean {
 		if (typeof value !== "string") return false;
 		return this.compiled.test(value);
 	}

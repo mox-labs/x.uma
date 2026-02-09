@@ -1,5 +1,5 @@
 // Core types
-export type { DataInput, InputMatcher, MatchingValue } from "./types.ts";
+export type { DataInput, InputMatcher, MatchingData } from "./types.ts";
 // HTTP domain: import from "bumi/http"
 // Test utilities (DictInput): import from "bumi/testing"
 

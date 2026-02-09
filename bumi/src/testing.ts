@@ -1,4 +1,4 @@
-import type { MatchingValue } from "./types.ts";
+import type { MatchingData } from "./types.ts";
 
 /**
  * Simple DataInput for Record contexts — used in tests and examples.
@@ -8,7 +8,7 @@ import type { MatchingValue } from "./types.ts";
 export class DictInput {
 	constructor(readonly key: string) {}
 
-	get(ctx: Record<string, string>): MatchingValue {
+	get(ctx: Record<string, string>): MatchingData {
 		return ctx[this.key] ?? null;
 	}
 }

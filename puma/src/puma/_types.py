@@ -1,7 +1,7 @@
 """Core protocols and type aliases for puma.
 
 The type system mirrors rumi's architecture:
-- MatchingValue replaces Rust's MatchingData enum (Python gets this for free)
+- MatchingData is the type-erased data union (same name across rumi/puma/bumi)
 - DataInput is the domain-specific extraction port
 - InputMatcher is the domain-agnostic matching port
 """
@@ -12,7 +12,7 @@ from typing import Protocol, TypeVar, runtime_checkable
 
 # The erased data type — Python's union replaces Rust's MatchingData enum.
 # None maps to MatchingData::None (triggers the None -> false invariant).
-MatchingValue = str | int | bool | bytes | None
+MatchingData = str | int | bool | bytes | None
 
 Ctx = TypeVar("Ctx", contravariant=True)
 
@@ -22,13 +22,13 @@ class DataInput(Protocol[Ctx]):
     """Extract a value from a domain-specific context.
 
     Implementations are domain-specific (HTTP, Claude, test) but return
-    the domain-agnostic MatchingValue type.
+    the domain-agnostic MatchingData type.
 
     Returning None signals "data not available" and causes the predicate
     to evaluate to False (the None -> false invariant).
     """
 
-    def get(self, ctx: Ctx, /) -> MatchingValue: ...
+    def get(self, ctx: Ctx, /) -> MatchingData: ...
 
 
 @runtime_checkable
@@ -40,4 +40,4 @@ class InputMatcher(Protocol):
     from Envoy's matcher architecture.
     """
 
-    def matches(self, value: MatchingValue, /) -> bool: ...
+    def matches(self, value: MatchingData, /) -> bool: ...

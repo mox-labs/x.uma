@@ -1,16 +1,16 @@
-import type { MatchingValue } from "../types.ts";
+import type { MatchingData } from "../types.ts";
 import type { HttpRequest } from "./request.ts";
 
 /** Extract the path (without query string) from an HTTP request. */
 export class PathInput {
-	get(ctx: HttpRequest): MatchingValue {
+	get(ctx: HttpRequest): MatchingData {
 		return ctx.path;
 	}
 }
 
 /** Extract the HTTP method from a request. */
 export class MethodInput {
-	get(ctx: HttpRequest): MatchingValue {
+	get(ctx: HttpRequest): MatchingData {
 		return ctx.method;
 	}
 }
@@ -19,7 +19,7 @@ export class MethodInput {
 export class HeaderInput {
 	constructor(readonly name: string) {}
 
-	get(ctx: HttpRequest): MatchingValue {
+	get(ctx: HttpRequest): MatchingData {
 		return ctx.header(this.name);
 	}
 }
@@ -28,7 +28,7 @@ export class HeaderInput {
 export class QueryParamInput {
 	constructor(readonly name: string) {}
 
-	get(ctx: HttpRequest): MatchingValue {
+	get(ctx: HttpRequest): MatchingData {
 		return ctx.queryParam(this.name);
 	}
 }

@@ -214,7 +214,7 @@ cases:
 
 **Test runners:**
 - Rust: `cargo test` (rumi-test crate)
-- Python: `pytest` (p.uma/tests/)
+- Python: `pytest` (puma/tests/)
 - TypeScript: `bun test` (b.uma/tests/, planned)
 
 Each language's test runner parses the same YAML fixtures, constructs matchers in its type system, and asserts the same expected outcomes.
@@ -237,7 +237,7 @@ Dependencies point inward. Core knows nothing about domains.
 ### Python (puma)
 
 ```text
-p.uma/
+puma/
 └── src/puma/
     ├── __init__.py     # Core types (flat exports)
     ├── _types.py       # Protocols
