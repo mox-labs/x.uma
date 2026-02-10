@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Concepts - x.uma</title>
+        <title>Predicate Composition - x.uma</title>
 
 
         <!-- Custom HTML head -->
@@ -35,10 +35,10 @@
             const path_to_root = "../";
             const default_light_theme = "rust";
             const default_dark_theme = "coal";
-            window.path_to_searchindex_js = "../searchindex-d13ad235.js";
+            window.path_to_searchindex_js = "../searchindex-76a1c5ef.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-9ddb2f6c.js"></script>
+        <script src="../toc-eb7188b1.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -146,7 +146,7 @@
                         <a href="https://github.com/mox-labs/x.uma" title="Git repository" aria-label="Git repository">
                             <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
                         </a>
-                        <a href="https://github.com/mox-labs/x.uma/edit/main/docs/src/learn/concepts.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
+                        <a href="https://github.com/mox-labs/x.uma/edit/main/docs/src/concepts/predicates.md" title="Suggest an edit" aria-label="Suggest an edit" rel="edit">
                             <span class=fa-svg id="git-edit-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M421.7 220.3l-11.3 11.3-22.6 22.6-205 205c-6.6 6.6-14.8 11.5-23.8 14.1L30.8 511c-8.4 2.5-17.5 .2-23.7-6.1S-1.5 489.7 1 481.2L38.7 353.1c2.6-9 7.5-17.2 14.1-23.8l205-205 22.6-22.6 11.3-11.3 33.9 33.9 62.1 62.1 33.9 33.9zM96 353.9l-9.3 9.3c-.9 .9-1.6 2.1-2 3.4l-25.3 86 86-25.3c1.3-.4 2.5-1.1 3.4-2l9.3-9.3H112c-8.8 0-16-7.2-16-16V353.9zM453.3 19.3l39.4 39.4c25 25 25 65.5 0 90.5l-14.5 14.5-22.6 22.6-11.3 11.3-33.9-33.9-62.1-62.1L314.3 67.7l11.3-11.3 22.6-22.6 14.5-14.5c25-25 65.5-25 90.5 0z"/></svg></span>
                         </a>
 
@@ -180,229 +180,202 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="concepts"><a class="header" href="#concepts">Concepts</a></h1>
-<p>Core abstractions in x.uma. The same concepts apply across Rust and Python implementations.</p>
-<h2 id="the-matching-pipeline"><a class="header" href="#the-matching-pipeline">The Matching Pipeline</a></h2>
-<pre><code class="language-text">Context → DataInput → MatchingValue → InputMatcher → bool
-                                           ↓
-                       Predicate (AND/OR/NOT composition)
-                                           ↓
-                               Matcher (first-match-wins)
-                                           ↓
-                                        Action
+                        <h1 id="predicate-composition"><a class="header" href="#predicate-composition">Predicate Composition</a></h1>
+<p>Real matchers combine conditions. AND, OR, NOT — compose them freely.</p>
+<h2 id="singlepredicate-the-building-block"><a class="header" href="#singlepredicate-the-building-block">SinglePredicate: The Building Block</a></h2>
+<p>A predicate is extraction plus matching in one step:</p>
+<pre><code class="language-python">from puma import SinglePredicate, PrefixMatcher
+from puma.http import PathInput
+
+# "Does the path start with /api?"
+predicate = SinglePredicate(
+    input=PathInput(),
+    matcher=PrefixMatcher("/api")
+)
 </code></pre>
-<p>Each step is a port. Domain-specific adapters plug in at the edges. The core is domain-agnostic.</p>
-<h2 id="key-types"><a class="header" href="#key-types">Key Types</a></h2>
-<h3 id="matchingvalue-type-erased-data"><a class="header" href="#matchingvalue-type-erased-data">MatchingValue (Type-Erased Data)</a></h3>
-<p>Matchers operate on type-erased data. This is what allows the same <code>ExactMatcher</code> to work for HTTP headers, event types, or custom domains.</p>
-<p><strong>Rust:</strong></p>
-<pre><code class="language-rust ignore">pub enum MatchingData {
-    None,
-    String(String),
-    Int(i64),
-    Bool(bool),
-    Bytes(Vec&lt;u8&gt;),
-    Custom(Arc&lt;dyn CustomMatchData&gt;),  // Extensible
-}</code></pre>
-<p><strong>Python:</strong></p>
-<pre><code class="language-python"># Type alias — Python gets union types for free
-MatchingValue = str | int | bool | bytes | None
+<p>When evaluated, it extracts the path and checks if it starts with <code>/api</code>. One step.</p>
+<h2 id="and-all-must-match"><a class="header" href="#and-all-must-match">AND: All Must Match</a></h2>
+<p>Combine multiple conditions. All must be true.</p>
+<pre><code class="language-python">from puma import And, SinglePredicate, PrefixMatcher, ExactMatcher
+from puma.http import PathInput, MethodInput
+
+# "Is it GET /api/*?"
+predicate = And((
+    SinglePredicate(PathInput(), PrefixMatcher("/api")),
+    SinglePredicate(MethodInput(), ExactMatcher("GET")),
+))
 </code></pre>
-<p>Python’s union type replaces Rust’s enum. Both serve the same purpose: type erasure at the data level.</p>
-<h3 id="datainput-extraction-port"><a class="header" href="#datainput-extraction-port">DataInput (Extraction Port)</a></h3>
-<p>Extracts data from your domain context. Domain-specific and generic over the context type.</p>
-<p><strong>Rust:</strong></p>
-<pre><code class="language-rust ignore">pub trait DataInput&lt;Ctx&gt;: Send + Sync {
-    fn get(&amp;self, ctx: &amp;Ctx) -&gt; MatchingData;
-}</code></pre>
-<p><strong>Python:</strong></p>
-<pre><code class="language-python">@runtime_checkable
-class DataInput(Protocol[Ctx]):
-    """Extract a value from a domain-specific context."""
-    def get(self, ctx: Ctx, /) -&gt; MatchingValue: ...
+<p><strong>Short-circuits:</strong> Stops evaluating on the first false condition. If the path check fails, the method check never runs.</p>
+<p><strong>Rust equivalent:</strong></p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use rumi::prelude::*;
+use rumi_http::{PathInput, MethodInput};
+
+let predicate = Predicate::and(vec![
+    SinglePredicate::new(PathInput, PrefixMatcher::new("/api")),
+    SinglePredicate::new(MethodInput, ExactMatcher::new("GET")),
+]);
+<span class="boring">}</span></code></pre>
+<p><strong>TypeScript equivalent:</strong></p>
+<pre><code class="language-typescript">import { And, SinglePredicate, PrefixMatcher, ExactMatcher } from '@x.uma/buma';
+import { PathInput, MethodInput } from '@x.uma/buma/http';
+
+const predicate = new And([
+  new SinglePredicate(new PathInput(), new PrefixMatcher('/api')),
+  new SinglePredicate(new MethodInput(), new ExactMatcher('GET')),
+]);
 </code></pre>
-<p>Python uses <code>Protocol</code> (structural typing) instead of Rust’s trait. Both define the extraction port contract.</p>
-<p><strong>Examples:</strong></p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Domain</th><th>Rust</th><th>Python</th></tr>
-</thead>
-<tbody>
-<tr><td>HTTP path</td><td><code>PathInput</code> (rumi-http)</td><td><code>PathInput()</code> (puma.http)</td></tr>
-<tr><td>HTTP header</td><td><code>HeaderInput { name }</code></td><td><code>HeaderInput(name)</code></td></tr>
-<tr><td>Dict key</td><td>(custom)</td><td><code>DictInput(key)</code></td></tr>
-<tr><td>Event type</td><td>(custom)</td><td><code>EventTypeInput()</code></td></tr>
-</tbody>
-</table>
-</div>
-<h3 id="inputmatcher-matching-port"><a class="header" href="#inputmatcher-matching-port">InputMatcher (Matching Port)</a></h3>
-<p>Matches against the type-erased value. Domain-agnostic and non-generic.</p>
-<p><strong>Rust:</strong></p>
-<pre><code class="language-rust ignore">pub trait InputMatcher: Send + Sync {
-    fn matches(&amp;self, value: &amp;MatchingData) -&gt; bool;
-}</code></pre>
-<p><strong>Python:</strong></p>
-<pre><code class="language-python">@runtime_checkable
-class InputMatcher(Protocol):
-    """Match against a type-erased value."""
-    def matches(self, value: MatchingValue, /) -&gt; bool: ...
+<h2 id="or-any-must-match"><a class="header" href="#or-any-must-match">OR: Any Must Match</a></h2>
+<p>At least one condition must be true.</p>
+<pre><code class="language-python">from puma import Or, SinglePredicate, PrefixMatcher
+from puma.http import PathInput
+
+# "Does the path start with /api or /admin?"
+predicate = Or((
+    SinglePredicate(PathInput(), PrefixMatcher("/api")),
+    SinglePredicate(PathInput(), PrefixMatcher("/admin")),
+))
 </code></pre>
-<p><strong>The key insight:</strong> <code>InputMatcher</code> is non-generic. The same <code>ExactMatcher</code> works for any domain because it operates on <code>MatchingData</code> / <code>MatchingValue</code>, not the original context type.</p>
-<p>Built-in matchers:</p>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Matcher</th><th>Matches</th><th>Rust</th><th>Python</th></tr>
-</thead>
-<tbody>
-<tr><td>Exact</td><td>Exact equality</td><td><code>ExactMatcher::new("foo")</code></td><td><code>ExactMatcher("foo")</code></td></tr>
-<tr><td>Prefix</td><td>String starts with</td><td><code>PrefixMatcher::new("/api")</code></td><td><code>PrefixMatcher("/api")</code></td></tr>
-<tr><td>Suffix</td><td>String ends with</td><td><code>SuffixMatcher::new(".json")</code></td><td><code>SuffixMatcher(".json")</code></td></tr>
-<tr><td>Contains</td><td>Substring present</td><td><code>ContainsMatcher::new("world")</code></td><td><code>ContainsMatcher("world")</code></td></tr>
-<tr><td>Regex</td><td>Regex search</td><td><code>RegexMatcher::new(r"\d+")</code></td><td><code>RegexMatcher(r"\d+")</code></td></tr>
-</tbody>
-</table>
-</div>
-<p>All matchers (except <code>RegexMatcher</code>) support optional case-insensitive matching via <code>ignore_case</code>.</p>
-<h3 id="predicate-boolean-composition"><a class="header" href="#predicate-boolean-composition">Predicate (Boolean Composition)</a></h3>
-<p>Combines <code>DataInput</code> + <code>InputMatcher</code> with boolean logic.</p>
+<p><strong>Short-circuits:</strong> Stops evaluating on the first true condition. If the first prefix matches, the second check never runs.</p>
+<h2 id="not-invert-the-result"><a class="header" href="#not-invert-the-result">NOT: Invert the Result</a></h2>
+<p>Negate any predicate.</p>
+<pre><code class="language-python">from puma import Not, SinglePredicate, ExactMatcher
+from puma.http import MethodInput
+
+# "Is it NOT a POST request?"
+predicate = Not(
+    SinglePredicate(MethodInput(), ExactMatcher("POST"))
+)
+</code></pre>
+<p>Useful for exclusion rules (match everything except X).</p>
+<h2 id="nesting-combine-freely"><a class="header" href="#nesting-combine-freely">Nesting: Combine Freely</a></h2>
+<p>Predicates nest arbitrarily up to <code>MAX_DEPTH</code> (32 levels).</p>
+<pre><code class="language-python">from puma import And, Or, SinglePredicate, PrefixMatcher, ExactMatcher
+from puma.http import PathInput, MethodInput, HeaderInput
+
+# "(GET /api/* OR POST /api/*) AND has auth header"
+predicate = And((
+    Or((
+        And((
+            SinglePredicate(MethodInput(), ExactMatcher("GET")),
+            SinglePredicate(PathInput(), PrefixMatcher("/api")),
+        )),
+        And((
+            SinglePredicate(MethodInput(), ExactMatcher("POST")),
+            SinglePredicate(PathInput(), PrefixMatcher("/api")),
+        )),
+    )),
+    SinglePredicate(HeaderInput("authorization"), PrefixMatcher("Bearer ")),
+))
+</code></pre>
+<p>This reads like: “Accept GET or POST to <code>/api/*</code>, but only if the request has an authorization header starting with <code>Bearer </code>.”</p>
+<p><strong>Depth validation:</strong> Trees exceeding 32 levels raise <code>MatcherError</code> at construction time. This protects against stack overflow and enforces a reasonable complexity limit.</p>
+<h2 id="gateway-api-compiler"><a class="header" href="#gateway-api-compiler">Gateway API Compiler</a></h2>
+<p>Manual predicate construction is verbose. The HTTP domain provides a compiler that builds predicates from Gateway API config:</p>
+<pre><code class="language-python">from puma.http import HttpRouteMatch, HttpPathMatch, HttpHeaderMatch
+
+# Human-friendly config
+route = HttpRouteMatch(
+    path=HttpPathMatch(type="PathPrefix", value="/api"),
+    method="GET",
+    headers=[
+        HttpHeaderMatch(type="Exact", name="content-type", value="application/json")
+    ],
+)
+
+# Compiler builds the predicate tree for you
+predicate = route.to_predicate()
+</code></pre>
+<p>This generates an <code>And</code> with three conditions (path, method, header). You don’t write the nesting manually.</p>
+<p><strong>Rust equivalent:</strong></p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use rumi_http::{HttpRouteMatch, HttpPathMatch, HttpHeaderMatch};
+
+let route = HttpRouteMatch {
+    path: Some(HttpPathMatch::PathPrefix { value: "/api".into() }),
+    method: Some("GET".into()),
+    headers: Some(vec![
+        HttpHeaderMatch::Exact {
+            name: "content-type".into(),
+            value: "application/json".into(),
+        }
+    ]),
+    ..Default::default()
+};
+
+let predicate = route.to_predicate();
+<span class="boring">}</span></code></pre>
+<h2 id="empty-and-and-or"><a class="header" href="#empty-and-and-or">Empty AND and OR</a></h2>
+<p>Edge cases with empty lists:</p>
+<p><strong>Empty AND:</strong> Returns <code>true</code> (vacuous truth). No conditions to fail means success.</p>
+<pre><code class="language-python">from puma import And
+
+predicate = And(())  # Empty tuple
+assert predicate.evaluate(request) == True
+</code></pre>
+<p><strong>Empty OR:</strong> Returns <code>false</code>. No conditions to pass means failure.</p>
+<pre><code class="language-python">from puma import Or
+
+predicate = Or(())  # Empty tuple
+assert predicate.evaluate(request) == False
+</code></pre>
+<p>These match standard boolean algebra. In practice, you rarely construct empty predicates directly.</p>
+<h2 id="the-none--false-invariant"><a class="header" href="#the-none--false-invariant">The None → False Invariant</a></h2>
+<p>If a <code>DataInput</code> returns <code>None</code>, the predicate evaluates to <code>False</code> without calling the matcher.</p>
+<pre><code class="language-python">from puma import SinglePredicate, ExactMatcher
+from puma.http import HttpRequest, HeaderInput
+
+predicate = SinglePredicate(
+    input=HeaderInput("x-api-key"),
+    matcher=ExactMatcher("secret")
+)
+
+# Header not present → DataInput returns None → predicate returns False
+request = HttpRequest(headers={})
+assert predicate.evaluate(request) == False
+</code></pre>
+<p>The matcher never sees <code>None</code>. The predicate handles it upstream. This simplifies matcher implementations (they only handle present values).</p>
+<h2 id="cross-language-predicate-types"><a class="header" href="#cross-language-predicate-types">Cross-Language Predicate Types</a></h2>
+<p>All three implementations provide the same predicate types with identical semantics.</p>
 <p><strong>Rust:</strong></p>
-<pre><code class="language-rust ignore">pub enum Predicate&lt;Ctx&gt; {
-    Single(SinglePredicate&lt;Ctx&gt;),  // extract + match
-    And(Vec&lt;Predicate&lt;Ctx&gt;&gt;),      // all must match
-    Or(Vec&lt;Predicate&lt;Ctx&gt;&gt;),       // any must match
-    Not(Box&lt;Predicate&lt;Ctx&gt;&gt;),      // negation
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Predicate&lt;Ctx&gt; {
+    Single(SinglePredicate&lt;Ctx&gt;),
+    And(Vec&lt;Predicate&lt;Ctx&gt;&gt;),
+    Or(Vec&lt;Predicate&lt;Ctx&gt;&gt;),
+    Not(Box&lt;Predicate&lt;Ctx&gt;&gt;),
 }
-
-pub struct SinglePredicate&lt;Ctx&gt; {
-    input: Box&lt;dyn DataInput&lt;Ctx&gt;&gt;,
-    matcher: Box&lt;dyn InputMatcher&gt;,
-}</code></pre>
+<span class="boring">}</span></code></pre>
 <p><strong>Python:</strong></p>
-<pre><code class="language-python">@dataclass(frozen=True, slots=True)
-class SinglePredicate[Ctx]:
-    input: DataInput[Ctx]
-    matcher: InputMatcher
-
-@dataclass(frozen=True, slots=True)
-class And[Ctx]:
-    predicates: tuple[Predicate[Ctx], ...]
-
-@dataclass(frozen=True, slots=True)
-class Or[Ctx]:
-    predicates: tuple[Predicate[Ctx], ...]
-
-@dataclass(frozen=True, slots=True)
-class Not[Ctx]:
-    predicate: Predicate[Ctx]
-
-# Union type (replaces Rust's enum)
-type Predicate[Ctx] = SinglePredicate[Ctx] | And[Ctx] | Or[Ctx] | Not[Ctx]
+<pre><code class="language-python">type Predicate[Ctx] = SinglePredicate[Ctx] | And[Ctx] | Or[Ctx] | Not[Ctx]
 </code></pre>
-<p>Python uses a type alias union instead of an enum. Both are pattern-matchable in their respective languages.</p>
-<p><strong>Short-circuit evaluation:</strong></p>
-<ul>
-<li><code>And</code> returns <code>False</code> on the first non-matching predicate</li>
-<li><code>Or</code> returns <code>True</code> on the first matching predicate</li>
-</ul>
-<h3 id="onmatch-action-or-nested-matcher"><a class="header" href="#onmatch-action-or-nested-matcher">OnMatch (Action or Nested Matcher)</a></h3>
-<p>What happens when a predicate matches. Exclusive: action XOR nested matcher, never both.</p>
-<p><strong>Rust:</strong></p>
-<pre><code class="language-rust ignore">pub enum OnMatch&lt;Ctx, A&gt; {
-    Action(A),              // Terminal: return this action
-    Matcher(Box&lt;Matcher&gt;),  // Nested: evaluate another matcher
-}</code></pre>
-<p><strong>Python:</strong></p>
-<pre><code class="language-python">@dataclass(frozen=True, slots=True)
-class Action[A]:
-    value: A
-
-@dataclass(frozen=True, slots=True)
-class NestedMatcher[Ctx, A]:
-    matcher: Matcher[Ctx, A]
-
-# Type alias (replaces Rust's enum)
-type OnMatch[Ctx, A] = Action[A] | NestedMatcher[Ctx, A]
+<p><strong>TypeScript:</strong></p>
+<pre><code class="language-typescript">type Predicate&lt;Ctx&gt; =
+  | SinglePredicate&lt;Ctx&gt;
+  | And&lt;Ctx&gt;
+  | Or&lt;Ctx&gt;
+  | Not&lt;Ctx&gt;;
 </code></pre>
-<p>The exclusivity is enforced by the type system — illegal states are unrepresentable.</p>
-<h3 id="matcher-first-match-wins"><a class="header" href="#matcher-first-match-wins">Matcher (First-Match-Wins)</a></h3>
-<p>Top-level container. Evaluates field matchers in order and returns the action from the first match.</p>
-<p><strong>Rust:</strong></p>
-<pre><code class="language-rust ignore">pub struct Matcher&lt;Ctx, A&gt; {
-    matcher_list: Vec&lt;FieldMatcher&lt;Ctx, A&gt;&gt;,
-    on_no_match: Option&lt;OnMatch&lt;Ctx, A&gt;&gt;,
-}
-
-pub struct FieldMatcher&lt;Ctx, A&gt; {
-    predicate: Predicate&lt;Ctx&gt;,
-    on_match: OnMatch&lt;Ctx, A&gt;,
-}</code></pre>
-<p><strong>Python:</strong></p>
-<pre><code class="language-python">@dataclass(frozen=True, slots=True)
-class Matcher[Ctx, A]:
-    matcher_list: tuple[FieldMatcher[Ctx, A], ...]
-    on_no_match: OnMatch[Ctx, A] | None = None
-
-@dataclass(frozen=True, slots=True)
-class FieldMatcher[Ctx, A]:
-    predicate: Predicate[Ctx]
-    on_match: OnMatch[Ctx, A]
-</code></pre>
-<p><strong>Evaluation semantics (xDS):</strong></p>
-<ol>
-<li>
-<p><strong>First-match-wins</strong> — Evaluate field matchers in order. Return the action from the first matching predicate. Later matches are never consulted.</p>
-</li>
-<li>
-<p><strong>OnMatch exclusivity</strong> — Each <code>OnMatch</code> is either an <code>Action</code> (terminal) or a nested <code>Matcher</code>, never both.</p>
-</li>
-<li>
-<p><strong>Nested matcher failure propagates</strong> — If a nested matcher returns <code>None</code>, evaluation continues to the next field matcher (no implicit fallback).</p>
-</li>
-<li>
-<p><strong>on_no_match fallback</strong> — If no predicate matches, <code>on_no_match</code> is consulted. If absent, the matcher returns <code>None</code>.</p>
-</li>
-<li>
-<p><strong>None → false invariant</strong> — If a <code>DataInput</code> returns <code>None</code>, the predicate evaluates to <code>False</code> without consulting the matcher.</p>
-</li>
-<li>
-<p><strong>Depth validation</strong> — Matcher trees exceeding <code>MAX_DEPTH</code> (32 levels) are rejected at construction.</p>
-</li>
-</ol>
-<h2 id="type-comparison"><a class="header" href="#type-comparison">Type Comparison</a></h2>
-<div class="table-wrapper">
-<table>
-<thead>
-<tr><th>Concept</th><th>Rust Type</th><th>Python Type</th></tr>
-</thead>
-<tbody>
-<tr><td>Type-erased data</td><td><code>enum MatchingData</code></td><td><code>type MatchingValue = str | int | bool | bytes | None</code></td></tr>
-<tr><td>Extraction port</td><td><code>trait DataInput&lt;Ctx&gt;</code></td><td><code>Protocol[Ctx]</code> with <code>get()</code></td></tr>
-<tr><td>Matching port</td><td><code>trait InputMatcher</code></td><td><code>Protocol</code> with <code>matches()</code></td></tr>
-<tr><td>Boolean logic</td><td><code>enum Predicate&lt;Ctx&gt;</code></td><td><code>type Predicate = Single | And | Or | Not</code></td></tr>
-<tr><td>Action/nested</td><td><code>enum OnMatch&lt;Ctx, A&gt;</code></td><td><code>type OnMatch = Action | NestedMatcher</code></td></tr>
-<tr><td>Top-level</td><td><code>struct Matcher&lt;Ctx, A&gt;</code></td><td><code>@dataclass Matcher[Ctx, A]</code></td></tr>
-</tbody>
-</table>
-</div>
-<p>Same concepts, idiomatic types for each language.</p>
+<p>Same structure. Same short-circuit behavior. Same depth limits. Write once in any language, the logic transfers.</p>
 <h2 id="next-steps"><a class="header" href="#next-steps">Next Steps</a></h2>
 <ul>
-<li><a href="../explain/architecture.html">Architecture</a> — why this design</li>
-<li><a href="../guides/adding-domain.html">Adding a Domain</a> — create custom matchers</li>
-<li><a href="../reference/http.html">HTTP Domain Reference</a> — HTTP-specific types</li>
+<li><a href="pipeline.html">The Matching Pipeline</a> — Where predicates fit in the flow</li>
+<li><a href="semantics.html">First-Match-Wins Semantics</a> — How matchers use predicates</li>
+<li><a href="../tutorials/http-router.html">Build an HTTP Router</a> — Predicates in action</li>
 </ul>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="../learn/quick-start.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="../concepts/type-erasure.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="../guides/adding-domain.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="../concepts/semantics.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -412,11 +385,11 @@ class FieldMatcher[Ctx, A]:
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="../learn/quick-start.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="../concepts/type-erasure.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="../guides/adding-domain.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="../concepts/semantics.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
