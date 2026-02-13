@@ -8,7 +8,7 @@ repository.workspace = true
 authors.workspace = true
 
 [dependencies]
-rumi.workspace = true
+rumi = { workspace = true, features = ["serde"] }
 serde.workspace = true
 
 [dev-dependencies]
