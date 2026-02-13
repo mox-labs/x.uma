@@ -48,9 +48,9 @@ pub use inputs::*;
 /// Prelude for convenient imports.
 pub mod prelude {
     pub use super::{
-        compile_hook_matches, ArgumentInput, ArgumentMatch, CompileError, CwdInput, EventInput,
-        GitBranchInput, HookContext, HookEvent, HookMatch, HookMatchExt, HookMatchTrace,
-        SessionIdInput, StringMatch, ToolNameInput, TraceStep,
+        compile_hook_matches, ArgumentInput, ArgumentMatch, CwdInput, EventInput, GitBranchInput,
+        HookContext, HookEvent, HookMatch, HookMatchExt, HookMatchTrace, SessionIdInput,
+        StringMatch, ToolNameInput, TraceStep,
     };
     pub use rumi::prelude::*;
 }
