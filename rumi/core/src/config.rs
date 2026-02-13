@@ -11,8 +11,9 @@
 //! | [`FieldMatcherConfig`] | [`FieldMatcher`](crate::FieldMatcher) | `Registry::load_field_matcher()` |
 //! | [`PredicateConfig`] | [`Predicate`](crate::Predicate) | `Registry::load_predicate()` |
 //! | [`SinglePredicateConfig`] | [`SinglePredicate`](crate::SinglePredicate) | `Registry::load_single()` |
+//! | [`ValueMatchConfig`] | `Box<dyn InputMatcher>` | built-in or via registry factory |
 //! | [`OnMatchConfig`] | [`OnMatch`](crate::OnMatch) | `Registry::load_on_match()` |
-//! | [`TypedConfig`] | `Box<dyn DataInput<Ctx>>` | via registry factory |
+//! | [`TypedConfig`] | `Box<dyn DataInput<Ctx>>` or `Box<dyn InputMatcher>` | via registry factory |
 
 use crate::StringMatchSpec;
 use serde::Deserialize;
@@ -82,33 +83,94 @@ pub enum PredicateConfig {
     },
 }
 
+/// How to match the extracted value in a [`SinglePredicateConfig`].
+///
+/// Mirrors Envoy's `oneof matcher` in `SinglePredicate`:
+/// - `BuiltIn` — built-in string matching (Envoy: `StringMatcher value_match`)
+/// - `Custom` — custom matcher via registry (Envoy: `TypedExtensionConfig custom_match`)
+///
+/// The enum makes illegal states unrepresentable: exactly one variant is active.
+#[derive(Debug, Clone)]
+pub enum ValueMatchConfig {
+    /// Built-in string matching (exact, prefix, suffix, contains, regex).
+    BuiltIn(StringMatchSpec),
+    /// Custom matcher resolved via the registry's matcher factories.
+    Custom(TypedConfig),
+}
+
 /// Configuration for a [`SinglePredicate`](crate::SinglePredicate).
 ///
 /// Combines a typed input reference (resolved via registry) with a
-/// string match specification.
-#[derive(Debug, Clone, Deserialize)]
+/// value matcher. The matcher is either a built-in `StringMatchSpec`
+/// (via `value_match` JSON field) or a custom registered type
+/// (via `custom_match` JSON field).
+///
+/// # JSON format
+///
+/// ```json
+/// { "input": { "type_url": "..." }, "value_match": { "Exact": "hello" } }
+/// { "input": { "type_url": "..." }, "custom_match": { "type_url": "...", "config": {...} } }
+/// ```
+///
+/// Exactly one of `value_match` or `custom_match` must be set.
+#[derive(Debug, Clone)]
 pub struct SinglePredicateConfig {
     /// The input to extract data from context.
     /// Resolved at load time via the registry's `type_url` lookup.
     pub input: TypedConfig,
 
     /// How to match the extracted value.
-    pub value_match: StringMatchSpec,
+    pub matcher: ValueMatchConfig,
+}
+
+impl<'de> Deserialize<'de> for SinglePredicateConfig {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        // Helper struct pattern: two Option fields for the oneof,
+        // validated to exactly-one-set at deserialization time.
+        #[derive(Deserialize)]
+        struct Helper {
+            input: TypedConfig,
+            #[serde(default)]
+            value_match: Option<StringMatchSpec>,
+            #[serde(default)]
+            custom_match: Option<TypedConfig>,
+        }
+
+        let helper = Helper::deserialize(deserializer)?;
+        let matcher = match (helper.value_match, helper.custom_match) {
+            (Some(spec), None) => ValueMatchConfig::BuiltIn(spec),
+            (None, Some(tc)) => ValueMatchConfig::Custom(tc),
+            (Some(_), Some(_)) => {
+                return Err(serde::de::Error::custom(
+                    "exactly one of `value_match` or `custom_match` must be set, got both",
+                ))
+            }
+            (None, None) => {
+                return Err(serde::de::Error::custom(
+                    "one of `value_match` or `custom_match` is required",
+                ))
+            }
+        };
+        Ok(SinglePredicateConfig {
+            input: helper.input,
+            matcher,
+        })
+    }
 }
 
 /// Reference to a registered type with its configuration.
 ///
 /// Maps to xDS `TypedExtensionConfig`:
-/// - `type_url` identifies the registered type
+/// - `type_url` identifies the registered type (input, matcher, or action)
 /// - `config` carries the type-specific configuration payload
 #[derive(Debug, Clone, Deserialize)]
 pub struct TypedConfig {
-    /// The type URL identifying the registered `DataInput` type.
+    /// The type URL identifying the registered type.
     /// Must match a `type_url` registered in the [`Registry`](crate::Registry).
     pub type_url: String,
 
     /// Type-specific configuration payload.
-    /// Deserialized as the `Config` associated type of the registered [`IntoDataInput`](crate::IntoDataInput).
+    /// Deserialized as the `Config` associated type of the registered trait impl.
     #[serde(default = "default_config")]
     pub config: serde_json::Value,
 }

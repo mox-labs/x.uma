@@ -103,14 +103,14 @@ impl rumi::IntoDataInput<TestContext> for StringInput {
     }
 }
 
-/// Register all rumi-test `DataInput` types with the given builder.
+/// Register all rumi-test types with the given builder.
 ///
-/// Type URLs:
+/// Registers core matchers (`BoolMatcher`, `StringMatcher`) and test-domain inputs:
 /// - `xuma.test.v1.StringInput` → [`StringInput`]
 #[cfg(feature = "registry")]
 #[must_use]
 pub fn register(builder: rumi::RegistryBuilder<TestContext>) -> rumi::RegistryBuilder<TestContext> {
-    builder.input::<StringInput>("xuma.test.v1.StringInput")
+    rumi::register_core_matchers(builder).input::<StringInput>("xuma.test.v1.StringInput")
 }
 
 #[cfg(test)]

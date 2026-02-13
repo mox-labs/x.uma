@@ -7,7 +7,10 @@
 
 #![cfg(all(feature = "fixtures", feature = "registry"))]
 
-use rumi::{MatcherConfig, OnMatchConfig, PredicateConfig, SinglePredicateConfig, TypedConfig};
+use rumi::{
+    MatcherConfig, OnMatchConfig, PredicateConfig, SinglePredicateConfig, TypedConfig,
+    ValueMatchConfig,
+};
 use rumi_test::fixture;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -64,7 +67,7 @@ fn convert_single(single: &fixture::SinglePredicateConfig) -> SinglePredicateCon
             type_url: "xuma.test.v1.StringInput".to_string(),
             config: serde_json::json!({ "key": single.input.key }),
         },
-        value_match: convert_value_match(&single.value_match),
+        matcher: ValueMatchConfig::BuiltIn(convert_value_match(&single.value_match)),
     }
 }
 

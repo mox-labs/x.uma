@@ -194,6 +194,7 @@ From 13-agent architecture review:
 | **Iterative Evaluation** | Taleb, Dijkstra | No recursive `evaluate()` — use explicit stack (deferred to v0.2). |
 | **DataInput None → false** | Dijkstra | `None` from `DataInput::get()` → predicate evaluates to `false`. |
 | **No unsafe impl** | Wolf | Let compiler derive Send/Sync — don't add restrictive bounds. |
+| **Validate extension points at construction** | Phase 11 review | Extension hooks (e.g., `data_type()`, `supported_types()`) that exist but are never enforced create silent failure modes. Validate compatibility at construction/load time, not evaluation time. |
 
 ## Arch-Guild Decision: Matcher Engine, Not Policy Engine
 

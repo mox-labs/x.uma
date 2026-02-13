@@ -49,9 +49,9 @@ pub use inputs::*;
 #[cfg(feature = "registry")]
 pub use inputs::ArgumentInputConfig;
 
-/// Register all rumi-claude `DataInput` types for [`HookContext`] with the given builder.
+/// Register all rumi-claude types for [`HookContext`] with the given builder.
 ///
-/// Type URLs:
+/// Registers core matchers (`BoolMatcher`, `StringMatcher`) and Claude-domain inputs:
 /// - `xuma.claude.v1.EventInput` → [`EventInput`]
 /// - `xuma.claude.v1.ToolNameInput` → [`ToolNameInput`]
 /// - `xuma.claude.v1.ArgumentInput` → [`ArgumentInput`]
@@ -61,7 +61,7 @@ pub use inputs::ArgumentInputConfig;
 #[cfg(feature = "registry")]
 #[must_use]
 pub fn register(builder: rumi::RegistryBuilder<HookContext>) -> rumi::RegistryBuilder<HookContext> {
-    builder
+    rumi::register_core_matchers(builder)
         .input::<EventInput>("xuma.claude.v1.EventInput")
         .input::<ToolNameInput>("xuma.claude.v1.ToolNameInput")
         .input::<ArgumentInput>("xuma.claude.v1.ArgumentInput")
