@@ -110,10 +110,13 @@ pub use string_match::StringMatchSpec;
 #[cfg(feature = "registry")]
 pub use config::{
     FieldMatcherConfig, MatcherConfig, OnMatchConfig, PredicateConfig, SinglePredicateConfig,
-    TypedConfig, UnitConfig,
+    TypedConfig, UnitConfig, ValueMatchConfig,
 };
 #[cfg(feature = "registry")]
-pub use registry::{IntoDataInput, Registry, RegistryBuilder};
+pub use registry::{
+    register_core_matchers, ActionRegistry, ActionRegistryBuilder, IntoAction, IntoDataInput,
+    IntoInputMatcher, Registry, RegistryBuilder,
+};
 
 // Trace types
 pub use trace::{EvalStep, EvalTrace, OnMatchTrace, PredicateTrace};
@@ -205,10 +208,19 @@ pub enum MatcherError {
         /// The underlying error message.
         source: String,
     },
-    /// An input type URL was not found in the registry.
+    /// A type URL was not found in the registry.
     UnknownTypeUrl {
         /// The unregistered type URL.
         type_url: String,
+        /// Which registry was searched (`"input"`, `"matcher"`, or `"action"`).
+        registry: &'static str,
+    },
+    /// Input data type is incompatible with matcher's supported types.
+    IncompatibleTypes {
+        /// The data type produced by the input.
+        input_type: String,
+        /// The data types accepted by the matcher.
+        matcher_types: Vec<String>,
     },
 }
 
@@ -228,10 +240,20 @@ impl std::fmt::Display for MatcherError {
             Self::InvalidConfig { source } => {
                 write!(f, "invalid config: {source}")
             }
-            Self::UnknownTypeUrl { type_url } => {
+            Self::UnknownTypeUrl { type_url, registry } => {
                 write!(
                     f,
-                    "unknown type URL \"{type_url}\" — register it with RegistryBuilder::input()"
+                    "unknown {registry} type URL \"{type_url}\" \
+                     — register it with RegistryBuilder::{registry}()"
+                )
+            }
+            Self::IncompatibleTypes {
+                input_type,
+                matcher_types,
+            } => {
+                write!(
+                    f,
+                    "input produces \"{input_type}\" data but matcher supports {matcher_types:?}"
                 )
             }
         }

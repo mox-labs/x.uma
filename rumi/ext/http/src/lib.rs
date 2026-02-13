@@ -94,9 +94,9 @@ pub mod prelude {
 #[cfg(feature = "registry")]
 pub use inputs::{HeaderInputConfig, QueryParamInputConfig};
 
-/// Register all rumi-http `DataInput` types for [`HttpMessage`] with the given builder.
+/// Register all rumi-http types for [`HttpMessage`] with the given builder.
 ///
-/// Type URLs:
+/// Registers core matchers (`BoolMatcher`, `StringMatcher`) and HTTP-domain inputs:
 /// - `xuma.http.v1.PathInput` → [`PathInput`]
 /// - `xuma.http.v1.MethodInput` → [`MethodInput`]
 /// - `xuma.http.v1.HeaderInput` → [`HeaderInput`]
@@ -106,7 +106,7 @@ pub use inputs::{HeaderInputConfig, QueryParamInputConfig};
 #[cfg(feature = "registry")]
 #[must_use]
 pub fn register(builder: rumi::RegistryBuilder<HttpMessage>) -> rumi::RegistryBuilder<HttpMessage> {
-    builder
+    rumi::register_core_matchers(builder)
         .input::<PathInput>("xuma.http.v1.PathInput")
         .input::<MethodInput>("xuma.http.v1.MethodInput")
         .input::<HeaderInput>("xuma.http.v1.HeaderInput")
