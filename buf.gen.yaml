@@ -1,9 +1,6 @@
 version: v2
 managed:
   enabled: true
-  override:
-    - file_option: go_package_prefix
-      value: github.com/xuma/xuma/gen/go
 plugins:
   # Rust (prost)
   - remote: buf.build/community/neoeinstein-prost
@@ -17,11 +14,11 @@ plugins:
 
   # Python (betterproto)
   - remote: buf.build/community/danielgtaylor-betterproto
-    out: puma/python/xuma/gen
+    out: puma/proto/src/gen
 
   # TypeScript (ts-proto)
   - remote: buf.build/community/stephenh-ts-proto
-    out: j.uma/src/gen
+    out: bumi/proto/src/gen
     opt:
       - esModuleInterop=true
       - outputServices=generic-definitions
