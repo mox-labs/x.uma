@@ -21,9 +21,11 @@ The goal: sustainable excellence — no rewrites needed. Growth happens at edges
 
 | Package | Language | Role |
 |---------|----------|------|
-| **rumi** | Rust | Core engine (the reference implementation) |
-| **puma** | Python | PyO3/maturin bindings |
-| **j.uma** | TypeScript | WASM bindings via wasm-pack |
+| **rumi** | Rust | Core engine (reference implementation) |
+| **puma** | Python | Pure Python implementation |
+| **bumi** | TypeScript | Pure TypeScript implementation |
+| **puma-crusty** | Python+Rust | PyO3 bindings (rumi/crusts/python/) |
+| **bumi-crusty** | TS+WASM | wasm-bindgen bindings (rumi/crusts/wasm/) |
 
 ```
 x.uma/
@@ -36,8 +38,8 @@ x.uma/
 │       └── claude/v1/
 ├── spec/tests/                 # conformance fixtures (YAML)
 ├── rumi/                      # Rust workspace member
-├── puma/                      # Python package (uv + maturin)
-├── j.uma/                      # TypeScript/WASM
+├── puma/                      # Pure Python implementation
+├── bumi/                      # Pure TypeScript implementation
 └── justfile                    # task orchestration
 ```
 
@@ -114,7 +116,7 @@ Methods follow Envoy's naming (`get()`, `matches()`, `evaluate()`).
 ### Build Order
 
 ```
-rumi (no deps) → puma (depends on rumi) → j.uma (depends on rumi)
+rumi (core) → puma (pure Python) / bumi (pure TypeScript) / crusts (FFI bindings)
 ```
 
 ### Development Workflow

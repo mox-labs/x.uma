@@ -159,7 +159,7 @@ maturin build --release
 
 ---
 
-## WASM Pipeline (j.uma)
+## WASM Pipeline (bumi)
 
 ### Build
 
