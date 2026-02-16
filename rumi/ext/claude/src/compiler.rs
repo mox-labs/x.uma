@@ -138,7 +138,7 @@ pub struct HookMatchTrace {
 /// One field's evaluation result in a trace.
 #[derive(Debug)]
 pub struct TraceStep {
-    /// Field name (e.g., "event", "`tool_name`", "argument[command]").
+    /// Field name (e.g., "event", "`tool_name`", "argument\[command\]").
     pub field: String,
     /// What was expected (e.g., `Exact("Bash")`).
     pub expected: String,
