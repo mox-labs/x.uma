@@ -2,62 +2,85 @@
 //!
 //! This crate provides two layers:
 //!
-//! 1. **User API**: Gateway API `HttpRouteMatch` for configuration
-//! 2. **Data Plane API**: `HttpMessage` (indexed from `ProcessingRequest`) for runtime
+//! 1. **Simple API**: `HttpRequest` for testing and lightweight bindings
+//! 2. **Data Plane API**: `HttpMessage` (indexed from `ProcessingRequest`) for production `ext_proc`
+//!
+//! The simple API is always available. The data plane API requires the `ext-proc` feature
+//! (enabled by default).
 //!
 //! # Architecture
 //!
 //! ```text
-//! Gateway API HttpRouteMatch (config)
+//! Gateway API HttpRouteMatch (config)        [ext-proc feature]
 //!         ↓ compile()
-//! rumi Matcher<HttpMessage, A>
+//! rumi Matcher<HttpMessage, A>               [ext-proc feature]
 //!         ↓ evaluate()
 //! HttpMessage (indexed from ext_proc ProcessingRequest)
-//! ```
 //!
-//! # Example
-//!
-//! ```ignore
-//! use rumi_http::prelude::*;
-//!
-//! // Config time: compile Gateway API match to rumi matcher
-//! let route_match = HttpRouteMatch {
-//!     path: Some(HttpPathMatch::PathPrefix { value: "/api".into() }),
-//!     ..Default::default()
-//! };
-//! let matcher = route_match.compile::<&str>("api_backend");
-//!
-//! // Runtime: index ProcessingRequest into HttpMessage, then evaluate
-//! let msg = HttpMessage::from(&processing_request);
-//! let result = matcher.evaluate(&msg);
+//! JSON MatcherConfig (config)                [registry feature]
+//!         ↓ register_simple() + load_matcher()
+//! rumi Matcher<HttpRequest, A>               [always available]
+//!         ↓ evaluate()
+//! HttpRequest (simple builder pattern)
 //! ```
 
-mod compiler;
-mod context;
-mod inputs;
-mod message;
+// Modules always available
 mod simple;
 
-pub use compiler::*;
-pub use inputs::*;
-pub use message::HttpMessage;
+// Modules requiring ext_proc heavy deps
+#[cfg(feature = "ext-proc")]
+mod compiler;
+#[cfg(feature = "ext-proc")]
+mod context;
+#[cfg(feature = "ext-proc")]
+mod inputs;
+#[cfg(feature = "ext-proc")]
+mod message;
+
+// Simple types (always available)
 pub use simple::{
     HttpRequest, HttpRequestBuilder, SimpleHeaderInput, SimpleMethodInput, SimplePathInput,
     SimpleQueryParamInput,
 };
 
+// Registry for simple HttpRequest context (always available with registry)
+#[cfg(feature = "registry")]
+pub use simple::register_simple;
+
+// ext_proc types (require ext-proc feature)
+#[cfg(feature = "ext-proc")]
+pub use compiler::*;
+#[cfg(feature = "ext-proc")]
+pub use inputs::*;
+#[cfg(feature = "ext-proc")]
+pub use message::HttpMessage;
+
 // Re-export ext_proc types for convenience
+#[cfg(feature = "ext-proc")]
 pub use envoy_grpc_ext_proc::envoy::service::ext_proc::v3::{
     ProcessingRequest, ProcessingResponse,
 };
 
 // Re-export Gateway API types for convenience
+#[cfg(feature = "ext-proc")]
 pub use k8s_gateway_api::{
     HttpHeaderMatch, HttpMethod, HttpPathMatch, HttpQueryParamMatch, HttpRouteMatch,
 };
 
 /// Prelude for convenient imports.
 pub mod prelude {
+    pub use super::{
+        // Simple context + inputs (always available)
+        HttpRequest,
+        HttpRequestBuilder,
+        SimpleHeaderInput,
+        SimpleMethodInput,
+        SimplePathInput,
+        SimpleQueryParamInput,
+    };
+
+    // ext_proc types (require ext-proc feature)
+    #[cfg(feature = "ext-proc")]
     pub use super::{
         // DataInputs for HttpMessage
         AuthorityInput,
@@ -69,10 +92,6 @@ pub mod prelude {
         HttpMethod,
         HttpPathMatch,
         HttpQueryParamMatch,
-        // Simple context + inputs (for testing)
-        HttpRequest,
-        HttpRequestBuilder,
-        HttpRouteMatch,
         // Compiler
         HttpRouteMatchExt,
         MethodInput,
@@ -82,16 +101,13 @@ pub mod prelude {
         ProcessingResponse,
         QueryParamInput,
         SchemeInput,
-        SimpleHeaderInput,
-        SimpleMethodInput,
-        SimplePathInput,
-        SimpleQueryParamInput,
     };
+
     pub use rumi::prelude::*;
 }
 
 // Registry config types (hand-written, only without proto)
-#[cfg(all(feature = "registry", not(feature = "proto")))]
+#[cfg(all(feature = "ext-proc", feature = "registry", not(feature = "proto")))]
 pub use inputs::{HeaderInputConfig, QueryParamInputConfig};
 
 /// Register all rumi-http types for [`HttpMessage`] with the given builder.
@@ -103,7 +119,7 @@ pub use inputs::{HeaderInputConfig, QueryParamInputConfig};
 /// - `xuma.http.v1.QueryParamInput` → [`QueryParamInput`]
 /// - `xuma.http.v1.SchemeInput` → [`SchemeInput`]
 /// - `xuma.http.v1.AuthorityInput` → [`AuthorityInput`]
-#[cfg(feature = "registry")]
+#[cfg(all(feature = "ext-proc", feature = "registry"))]
 #[must_use]
 pub fn register(builder: rumi::RegistryBuilder<HttpMessage>) -> rumi::RegistryBuilder<HttpMessage> {
     rumi::register_core_matchers(builder)

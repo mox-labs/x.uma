@@ -52,6 +52,7 @@ impl ConfigFixture {
 
 impl ConfigTestCase {
     /// Build a `TestContext` from this case's context map.
+    #[must_use]
     pub fn build_context(&self) -> crate::TestContext {
         let mut ctx = crate::TestContext::new();
         for (k, v) in &self.context {

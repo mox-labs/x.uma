@@ -3,6 +3,12 @@
 Linear-time regex, zero-copy evaluation, type-safe config.
 """
 
-from puma_crusty.puma_crusty import HookMatcher, PyHookMatch as HookMatch, PyStringMatch as StringMatch
+from puma_crusty.puma_crusty import (
+    HookMatcher,
+    HttpMatcher,
+    PyHookMatch as HookMatch,
+    PyStringMatch as StringMatch,
+    TestMatcher,
+)
 
-__all__ = ["HookMatcher", "HookMatch", "StringMatch"]
+__all__ = ["HookMatcher", "HookMatch", "HttpMatcher", "StringMatch", "TestMatcher"]

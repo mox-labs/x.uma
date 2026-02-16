@@ -1,0 +1,212 @@
+//! Config-driven test matcher exposed to TypeScript via wasm-bindgen.
+//!
+//! Takes a JSON config string, compiles it via Rust registry, and evaluates
+//! against key-value contexts passed as plain JS objects.
+
+use rumi::prelude::*;
+use rumi_test::TestContext;
+use wasm_bindgen::prelude::*;
+
+use crate::matcher::{TraceResultSerde, TraceStepSerde};
+
+/// An opaque compiled test matcher.
+///
+/// Created via `TestMatcher.fromConfig()`, immutable after construction.
+/// Evaluates key-value contexts against compiled matcher trees.
+#[wasm_bindgen]
+pub struct TestMatcher {
+    inner: Matcher<TestContext, String>,
+}
+
+#[wasm_bindgen]
+impl TestMatcher {
+    /// Load a matcher from a JSON config string.
+    ///
+    /// The config format is `MatcherConfig<String>` — the same JSON shape used
+    /// by all x.uma implementations (rumi, puma, bumi).
+    ///
+    /// # Supported input type URLs
+    ///
+    /// - `xuma.test.v1.StringInput` — string lookup by key (config: `{"key": "..."}`)
+    #[wasm_bindgen(js_name = "fromConfig")]
+    pub fn from_config(json_config: &str) -> Result<TestMatcher, JsValue> {
+        let config: rumi::MatcherConfig<String> = serde_json::from_str(json_config)
+            .map_err(|e| JsValue::from_str(&format!("invalid config JSON: {e}")))?;
+
+        let registry = build_test_registry();
+        let matcher = registry
+            .load_matcher(config)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+        matcher
+            .validate()
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
+
+        Ok(Self { inner: matcher })
+    }
+
+    /// Evaluate a key-value context against compiled matcher rules.
+    ///
+    /// Accepts a plain `Record<string, string>` object:
+    /// ```js
+    /// matcher.evaluate({ role: "admin", org: "acme" })
+    /// ```
+    ///
+    /// Returns the action string if the context matched, or `undefined`.
+    pub fn evaluate(&self, context: JsValue) -> Result<Option<String>, JsValue> {
+        let ctx = build_context_from_js(&context)?;
+        Ok(self.inner.evaluate(&ctx))
+    }
+
+    /// Trace evaluation for debugging.
+    pub fn trace(&self, context: JsValue) -> Result<JsValue, JsValue> {
+        let ctx = build_context_from_js(&context)?;
+        let trace = self.inner.evaluate_with_trace(&ctx);
+
+        let steps: Vec<TraceStepSerde> = trace
+            .steps
+            .iter()
+            .map(|step| TraceStepSerde {
+                index: step.index,
+                matched: step.matched,
+                predicate: format!("{:?}", step.predicate_trace),
+            })
+            .collect();
+
+        let result = TraceResultSerde {
+            result: trace.result,
+            steps,
+            used_fallback: trace.used_fallback,
+        };
+
+        serde_wasm_bindgen::to_value(&result).map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    /// Load and run conformance fixtures from a YAML string.
+    ///
+    /// Returns an array of `{ fixture, caseName, passed, detail }` objects.
+    #[wasm_bindgen(js_name = "runFixtures")]
+    pub fn run_fixtures(yaml_content: &str) -> Result<JsValue, JsValue> {
+        let fixtures = rumi_test::config_fixture::ConfigFixture::from_yaml_multi(yaml_content)
+            .map_err(|e| JsValue::from_str(&format!("invalid YAML: {e}")))?;
+
+        let registry = build_test_registry();
+        let mut results: Vec<FixtureResultSerde> = Vec::new();
+
+        for fixture in &fixtures {
+            if fixture.expect_error {
+                let config_result: Result<rumi::MatcherConfig<String>, _> =
+                    serde_json::from_value(fixture.config.clone());
+                match config_result {
+                    Err(_) => {
+                        results.push(FixtureResultSerde {
+                            fixture: fixture.name.clone(),
+                            case_name: "parse_error".into(),
+                            passed: true,
+                            detail: "correctly rejected at parse".into(),
+                        });
+                    }
+                    Ok(config) => match registry.load_matcher(config) {
+                        Err(_) => {
+                            results.push(FixtureResultSerde {
+                                fixture: fixture.name.clone(),
+                                case_name: "load_error".into(),
+                                passed: true,
+                                detail: "correctly rejected at load".into(),
+                            });
+                        }
+                        Ok(_) => {
+                            results.push(FixtureResultSerde {
+                                fixture: fixture.name.clone(),
+                                case_name: "should_fail".into(),
+                                passed: false,
+                                detail: "expected error but config loaded successfully".into(),
+                            });
+                        }
+                    },
+                }
+                continue;
+            }
+
+            let config: rumi::MatcherConfig<String> =
+                match serde_json::from_value(fixture.config.clone()) {
+                    Ok(c) => c,
+                    Err(e) => {
+                        results.push(FixtureResultSerde {
+                            fixture: fixture.name.clone(),
+                            case_name: "parse".into(),
+                            passed: false,
+                            detail: format!("config parse failed: {e}"),
+                        });
+                        continue;
+                    }
+                };
+
+            let matcher = match registry.load_matcher(config) {
+                Ok(m) => m,
+                Err(e) => {
+                    results.push(FixtureResultSerde {
+                        fixture: fixture.name.clone(),
+                        case_name: "load".into(),
+                        passed: false,
+                        detail: format!("config load failed: {e}"),
+                    });
+                    continue;
+                }
+            };
+
+            for case in &fixture.cases {
+                let ctx = case.build_context();
+                let result = matcher.evaluate(&ctx);
+                let passed = result == case.expect;
+                let detail = if passed {
+                    format!("got {result:?}")
+                } else {
+                    format!("expected {:?}, got {result:?}", case.expect)
+                };
+                results.push(FixtureResultSerde {
+                    fixture: fixture.name.clone(),
+                    case_name: case.name.clone(),
+                    passed,
+                    detail,
+                });
+            }
+        }
+
+        serde_wasm_bindgen::to_value(&results).map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+}
+
+/// Build the test registry for `TestContext`.
+fn build_test_registry() -> rumi::Registry<TestContext> {
+    rumi_test::register(rumi::RegistryBuilder::new()).build()
+}
+
+/// Build a `TestContext` from a JS plain object (Record<string, string>).
+fn build_context_from_js(val: &JsValue) -> Result<TestContext, JsValue> {
+    let entries = js_sys::Object::entries(&js_sys::Object::from(val.clone()));
+    let mut ctx = TestContext::new();
+    for entry in entries.iter() {
+        let pair = js_sys::Array::from(&entry);
+        let key = pair
+            .get(0)
+            .as_string()
+            .ok_or_else(|| JsValue::from_str("context key must be a string"))?;
+        let value = pair
+            .get(1)
+            .as_string()
+            .ok_or_else(|| JsValue::from_str("context value must be a string"))?;
+        ctx = ctx.with(key, value);
+    }
+    Ok(ctx)
+}
+
+/// Fixture result for serde-wasm-bindgen serialization.
+#[derive(serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct FixtureResultSerde {
+    fixture: String,
+    case_name: String,
+    passed: bool,
+    detail: String,
+}

@@ -13,6 +13,9 @@ crate-type = ["cdylib", "lib"]
 
 [dependencies]
 pyo3 = { version = "0.25", features = ["extension-module"] }
-rumi = { path = "../../core" }
+rumi = { path = "../../core", features = ["registry"] }
 rumi-claude = { path = "../../ext/claude" }
-rumi-http = { path = "../../ext/http" }
+rumi-http = { path = "../../ext/http", default-features = false, features = ["registry"] }
+rumi-test = { path = "../../ext/test", features = ["registry", "fixtures"] }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }

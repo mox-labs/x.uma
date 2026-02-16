@@ -193,16 +193,16 @@ fn build_context_from_js(val: &JsValue) -> Result<HookContext, JsValue> {
 /// Serde-serializable trace result (for serde-wasm-bindgen output).
 #[derive(serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-struct TraceResultSerde {
-    result: Option<String>,
-    steps: Vec<TraceStepSerde>,
-    used_fallback: bool,
+pub(crate) struct TraceResultSerde {
+    pub(crate) result: Option<String>,
+    pub(crate) steps: Vec<TraceStepSerde>,
+    pub(crate) used_fallback: bool,
 }
 
 /// One step in the evaluation trace.
 #[derive(serde::Serialize)]
-struct TraceStepSerde {
-    index: usize,
-    matched: bool,
-    predicate: String,
+pub(crate) struct TraceStepSerde {
+    pub(crate) index: usize,
+    pub(crate) matched: bool,
+    pub(crate) predicate: String,
 }
