@@ -63,14 +63,14 @@ pub struct NotPredicate {
     pub not: Box<PredicateConfig>,
 }
 
-/// Single predicate: input + value_match
+/// Single predicate: input + `value_match`
 #[derive(Debug, Deserialize)]
 pub struct SinglePredicateConfig {
     pub input: InputConfig,
     pub value_match: ValueMatchConfig,
 }
 
-/// Input configuration (just a key for TestContext)
+/// Input configuration (just a key for `TestContext`)
 #[derive(Debug, Deserialize)]
 pub struct InputConfig {
     pub key: String,
@@ -106,7 +106,7 @@ pub struct ContainsMatch {
     pub contains: String,
 }
 
-/// OnMatch configuration: action or nested matcher
+/// `OnMatch` configuration: action or nested matcher
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
 pub enum OnMatchConfig {
@@ -201,7 +201,8 @@ impl OnMatchConfig {
 }
 
 impl TestCase {
-    /// Build a TestContext from this case's context map
+    /// Build a `TestContext` from this case's context map
+    #[must_use]
     pub fn build_context(&self) -> TestContext {
         let mut ctx = TestContext::new();
         for (k, v) in &self.context {
@@ -240,6 +241,7 @@ impl Fixture {
     }
 
     /// Run all test cases and return results
+    #[must_use]
     pub fn run(&self) -> Vec<CaseResult> {
         let matcher = self.matcher.build();
         self.cases

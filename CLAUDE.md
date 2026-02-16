@@ -122,21 +122,24 @@ x.uma/
 | 10 | TypedExtensionConfig Registry (`IntoDataInput`, `RegistryBuilder`) | ✅ Done |
 | 11 | Test audit (removed 18 ineffective tests → 216 total) | ✅ Done |
 | 12 | Proto Alignment: buf codegen, `rumi-proto`, `AnyResolver`, xDS Matcher loading | ✅ Done |
-| 13 | Config/Registry across all implementations | 🚧 In Progress |
+| 13 | Config/Registry across all implementations | ✅ Done |
+| 14 | Config-path benchmarks (all 5 variants) | Planned |
 | — | Semantic matching (cosine similarity via `CustomMatchData`) | Planned |
 | — | RE2 migration: `google-re2` for puma, `re2js` for bumi | Planned |
 
 ## Current Work
 
-**Phase 13: Config/Registry Across All Implementations**
+**Phase 14: Config-Path Benchmarks**
 
-Bringing config-driven matcher construction to all 5 implementations. Same JSON config → working matchers everywhere.
+Phase 9 benchmarked the compiler path (HookMatcher). Phase 13 added config-driven matchers (HttpMatcher, TestMatcher) across all 5 implementations. Phase 14 benchmarks this new config/registry path.
 
-- **Plan**: `scratch/phase-13-plan.md` (sub-phases 13.0–13.5, guild findings, design decisions)
-- **Progress**: `scratch/phase-13-progress.md` (status tracker, dependency graph, completion criteria)
-- **Guild report**: `scratch/arch-guild-reports/phase-13/`
+- **Plan**: `scratch/phase-14-plan.md`
+- **Progress**: `scratch/phase-14-progress.md`
 
-Implementation order: rumi core hardening (13.0) → config fixtures (13.1) → puma/bumi/crusty ports (13.2–13.5 parallel).
+Key questions:
+1. Config loading cost: `from_config(json)` vs `compile(rules)` — how much does JSON parsing + registry lookup add?
+2. Evaluation parity: once compiled, does the registry path evaluate at the same speed?
+3. FFI overhead: pure puma/bumi config path vs crusty config path
 
 ## Tooling
 

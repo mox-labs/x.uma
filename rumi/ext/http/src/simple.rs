@@ -157,6 +157,93 @@ impl DataInput<HttpRequest> for SimpleQueryParamInput {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Registry support for HttpRequest (feature = "registry")
+// Mirrors the HttpMessage registry but for the simpler HttpRequest context.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Configuration for [`SimpleHeaderInput`].
+#[cfg(all(feature = "registry", not(feature = "proto")))]
+#[derive(serde::Deserialize)]
+pub struct SimpleHeaderInputConfig {
+    /// The header name to extract (case-insensitive).
+    pub name: String,
+}
+
+/// Configuration for [`SimpleQueryParamInput`].
+#[cfg(all(feature = "registry", not(feature = "proto")))]
+#[derive(serde::Deserialize)]
+pub struct SimpleQueryParamInputConfig {
+    /// The query parameter name to extract.
+    pub name: String,
+}
+
+#[cfg(all(feature = "registry", not(feature = "proto")))]
+impl rumi::IntoDataInput<HttpRequest> for SimplePathInput {
+    type Config = rumi::UnitConfig;
+
+    fn from_config(
+        _: rumi::UnitConfig,
+    ) -> Result<Box<dyn rumi::DataInput<HttpRequest>>, rumi::MatcherError> {
+        Ok(Box::new(SimplePathInput))
+    }
+}
+
+#[cfg(all(feature = "registry", not(feature = "proto")))]
+impl rumi::IntoDataInput<HttpRequest> for SimpleMethodInput {
+    type Config = rumi::UnitConfig;
+
+    fn from_config(
+        _: rumi::UnitConfig,
+    ) -> Result<Box<dyn rumi::DataInput<HttpRequest>>, rumi::MatcherError> {
+        Ok(Box::new(SimpleMethodInput))
+    }
+}
+
+#[cfg(all(feature = "registry", not(feature = "proto")))]
+impl rumi::IntoDataInput<HttpRequest> for SimpleHeaderInput {
+    type Config = SimpleHeaderInputConfig;
+
+    fn from_config(
+        config: Self::Config,
+    ) -> Result<Box<dyn rumi::DataInput<HttpRequest>>, rumi::MatcherError> {
+        Ok(Box::new(SimpleHeaderInput::new(config.name)))
+    }
+}
+
+#[cfg(all(feature = "registry", not(feature = "proto")))]
+impl rumi::IntoDataInput<HttpRequest> for SimpleQueryParamInput {
+    type Config = SimpleQueryParamInputConfig;
+
+    fn from_config(
+        config: Self::Config,
+    ) -> Result<Box<dyn rumi::DataInput<HttpRequest>>, rumi::MatcherError> {
+        Ok(Box::new(SimpleQueryParamInput::new(config.name)))
+    }
+}
+
+/// Register all rumi-http types for [`HttpRequest`] with the given builder.
+///
+/// Uses the same type URLs as the full [`HttpMessage`](crate::HttpMessage) registry,
+/// but with simpler inputs suitable for testing and Python/WASM bindings.
+///
+/// Registers:
+/// - `xuma.http.v1.PathInput` → [`SimplePathInput`]
+/// - `xuma.http.v1.MethodInput` → [`SimpleMethodInput`]
+/// - `xuma.http.v1.HeaderInput` → [`SimpleHeaderInput`]
+/// - `xuma.http.v1.QueryParamInput` → [`SimpleQueryParamInput`]
+#[cfg(feature = "registry")]
+#[must_use]
+pub fn register_simple(
+    builder: rumi::RegistryBuilder<HttpRequest>,
+) -> rumi::RegistryBuilder<HttpRequest> {
+    rumi::register_core_matchers(builder)
+        .input::<SimplePathInput>("xuma.http.v1.PathInput")
+        .input::<SimpleMethodInput>("xuma.http.v1.MethodInput")
+        .input::<SimpleHeaderInput>("xuma.http.v1.HeaderInput")
+        .input::<SimpleQueryParamInput>("xuma.http.v1.QueryParamInput")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
