@@ -72,7 +72,7 @@ test_send_sync
 test_soundness
 test_variance
 docs/book/
-docs/src/generated/
+docs/api/
 
 # Playground
 playground/build/
